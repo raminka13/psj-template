@@ -1,0 +1,213 @@
+/* ==========================================================================
+ *  GLOBAL.CSS — puente entre los tokens y Tailwind + estilos base
+ * ==========================================================================
+ *  Aquí casi nunca hay que tocar nada: los valores viven en tokens.css.
+ *  Este archivo solo declara qué utilidades existen y a qué token apuntan.
+ * ========================================================================== */
+
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* ── Variante `dark:` ──────────────────────────────────────────────────────
+ * Se ata a data-theme en vez de a prefers-color-scheme, para que el toggle
+ * manual del usuario gane sobre la preferencia del sistema. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* ==========================================================================
+ *  MAPEO TOKEN → UTILIDAD DE TAILWIND
+ * ==========================================================================
+ *  `@theme inline` es obligatorio aquí, y la razón importa:
+ *
+ *  Con `@theme` normal, Tailwind fija --color-primary en :root con el valor
+ *  ya resuelto en el momento de compilar. Como el valor que queremos es una
+ *  referencia a otra variable (--brand-primary), quedaría congelado y el
+ *  modo oscuro no tendría efecto sobre los botones.
+ *
+ *  Con `@theme inline`, `bg-primary` compila a
+ *      background-color: var(--brand-primary)
+ *  y la referencia se resuelve en el punto de uso. Basta redefinir
+ *  --brand-primary en <html> (modo oscuro, o el prop `theme` del layout)
+ *  para que toda la página cambie de color.
+ *
+ *  Los tokens con valor literal (radios, sombras, curvas, escala tipográfica)
+ *  NO necesitan `inline` y viven directamente en el @theme de tokens.css.
+ * ========================================================================== */
+
+@theme inline {
+  /* ── Colores de marca ────────────────────────────────────────────────── */
+  --color-primary: var(--brand-primary);
+  --color-primary-hover: var(--brand-primary-hover);
+  --color-primary-active: var(--brand-primary-active);
+  --color-primary-soft: var(--brand-primary-soft);
+  --color-primary-muted: var(--brand-primary-muted);
+  --color-on-primary: var(--brand-primary-on);
+
+  --color-secondary: var(--brand-secondary);
+  --color-secondary-hover: var(--brand-secondary-hover);
+  --color-secondary-soft: var(--brand-secondary-soft);
+  --color-on-secondary: var(--brand-secondary-on);
+
+  --color-accent: var(--brand-accent);
+  --color-accent-hover: var(--brand-accent-hover);
+  --color-accent-soft: var(--brand-accent-soft);
+  --color-on-accent: var(--brand-accent-on);
+
+  /* ── Superficies y texto ─────────────────────────────────────────────── */
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-inverse: var(--surface-inverse);
+
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+  --color-ink-inverse: var(--ink-inverse);
+
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  /* ── Estados ─────────────────────────────────────────────────────────── */
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  /* ── Tipografías (las inyecta Astro desde src/config/fonts.ts) ───────── */
+  --font-sans: var(--font-body);
+  --font-display: var(--font-heading);
+}
+
+/* ==========================================================================
+ *  BASE
+ * ========================================================================== */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Compensa el header sticky al saltar a un ancla, para que el título no
+     * quede escondido detrás. */
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: var(--leading-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+    line-height: var(--leading-display);
+    letter-spacing: var(--tracking-display);
+    /* Reparte las palabras para que no quede una sola colgando en la última
+     * línea de un título. */
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Foco visible y consistente en todo el sitio, atado al color de marca.
+   * :focus-visible y no :focus — así el anillo aparece al navegar con teclado
+   * pero no al hacer clic con el mouse. */
+  :focus-visible {
+    outline: var(--ring-w) solid var(--ring-color);
+    outline-offset: var(--ring-offset);
+    border-radius: var(--radius-input);
+  }
+
+  ::selection {
+    background-color: var(--brand-primary-muted);
+    color: var(--ink);
+  }
+
+  img,
+  svg,
+  video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  hr {
+    border-color: var(--line);
+  }
+
+  /* Los detalles nativos del acordeón de FAQ no muestran el triángulo. */
+  summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+ *  UTILIDADES PROPIAS
+ * ========================================================================== */
+
+@layer utilities {
+  /* Ancho de lectura cómodo para bloques de texto largo. */
+  .measure {
+    max-width: var(--measure);
+  }
+
+  /* Aquí vivía .text-gradient-brand, un degradado de los tres colores de marca
+   * para destacar palabras en los titulares. Se eliminó a propósito y no
+   * conviene reponerlo:
+   *
+   *   - Rompía la regla de un solo acento por vista: metía los tres colores
+   *     de marca en el elemento más visible de la página.
+   *   - El degradado de texto multicolor es, junto con la serif de moda, la
+   *     firma visual del titular generado por IA.
+   *   - Un texto con `color: transparent` depende de background-clip; si algo
+   *     falla al pintarlo, el titular desaparece por completo.
+   *
+   * Para enfatizar una palabra dentro de un titular, usa <em>: itálica de la
+   * misma familia. Es lo que hace el Hero. */
+
+  /* Enlace de "saltar al contenido": invisible hasta que recibe foco.
+   * Es el primer elemento tabulable de la página. */
+  .skip-link {
+    position: absolute;
+    left: 0.5rem;
+    top: -100%;
+    z-index: 100;
+    border-radius: var(--radius-btn);
+    background-color: var(--brand-primary);
+    color: var(--brand-primary-on);
+    padding: 0.75rem 1.25rem;
+    transition: top 150ms var(--ease-out-soft);
+  }
+  .skip-link:focus {
+    top: 0.5rem;
+  }
+}
+
+/* ==========================================================================
+ *  MOVIMIENTO REDUCIDO
+ * ==========================================================================
+ *  No es un detalle opcional: para quien tiene trastornos vestibulares, el
+ *  movimiento innecesario provoca mareo real. Se anula todo menos la opacidad,
+ *  que es segura y mantiene legible cualquier transición.
+ * ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

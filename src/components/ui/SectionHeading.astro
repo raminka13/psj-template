@@ -1,0 +1,64 @@
+---
+/**
+ * Encabezado de sección: etiqueta opcional, título y bajada.
+ *
+ * Existe para que las secciones no repitan la misma maqueta de títulos con
+ * medidas ligeramente distintas cada vez. Los tamaños salen de la escala
+ * fluida de tokens.css (--text-h1, --text-h2…), así que crecen con el
+ * viewport sin media queries.
+ */
+import Badge from "./Badge.astro";
+
+interface Props {
+  /** Etiqueta pequeña arriba del título. */
+  eyebrow?: string;
+  title: string;
+  /** Bajada bajo el título. Acepta HTML simple. */
+  subtitle?: string;
+  /** Nivel del encabezado. Úsalo para no romper la jerarquía de la página. */
+  as?: "h1" | "h2" | "h3";
+  size?: "display" | "h1" | "h2" | "h3";
+  align?: "left" | "center";
+  class?: string;
+}
+
+// Ver la nota sobre `: Props` en Container.astro.
+const {
+  eyebrow,
+  title,
+  subtitle,
+  as: Tag = "h2",
+  size = "h2",
+  // Izquierda por defecto, no centro. Centrar todas las secciones es la
+  // silueta que delata una plantilla: la página entera se lee como una
+  // columna de texto centrado sin jerarquía ni dirección de lectura.
+  // El centrado se pide explícitamente donde de verdad aporta (un cierre, un
+  // mensaje único), no se hereda sin pensarlo.
+  align = "left",
+  class: className = "",
+}: Props = Astro.props;
+
+const sizes = {
+  display: "text-display",
+  h1: "text-h1",
+  h2: "text-h2",
+  h3: "text-h3",
+};
+
+const alignment = align === "center" ? "text-center mx-auto items-center" : "text-left items-start";
+---
+
+<div class={`flex flex-col gap-4 ${alignment} ${className}`}>
+  {eyebrow && <Badge variant="primary">{eyebrow}</Badge>}
+
+  <Tag class={`font-display font-bold text-ink ${sizes[size]}`}>{title}</Tag>
+
+  {
+    subtitle && (
+      <p
+        class={`measure text-lead text-ink-muted ${align === "center" ? "mx-auto" : ""}`}
+        set:html={subtitle}
+      />
+    )
+  }
+</div>

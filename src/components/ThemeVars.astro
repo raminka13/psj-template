@@ -1,0 +1,21 @@
+---
+/**
+ * Emite las variables CSS de un override de tema sobre :root.
+ *
+ * Va dentro del <head>, después de la hoja global, para que gane por orden
+ * de cascada sin necesidad de !important.
+ *
+ * Solo se emiten las variables que realmente se pasaron: las demás siguen
+ * tomando su valor de tokens.css.
+ */
+import { themeToStyle, type ThemeOverrides } from "@config/theme";
+
+interface Props {
+  theme?: ThemeOverrides;
+}
+
+const { theme } = Astro.props;
+const declarations = themeToStyle(theme);
+---
+
+{declarations && <style is:inline set:html={`:root{${declarations}}`} />}

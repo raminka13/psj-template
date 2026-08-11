@@ -1,0 +1,27 @@
+---
+import Button from "@components/ui/Button.astro";
+import Section from "@components/ui/Section.astro";
+import PageLayout from "@layouts/PageLayout.astro";
+---
+
+<PageLayout
+  seo={{
+    title: "Página no encontrada",
+    description: "La página que buscas no existe o cambió de dirección.",
+    noindex: true,
+  }}
+>
+  <Section>
+    <div class="flex flex-col items-center gap-6 py-20 text-center">
+      <p class="font-display text-display text-primary-muted font-bold">404</p>
+      <h1 class="font-display text-h1 text-ink font-bold">Esta página no existe</h1>
+      <p class="measure text-lead text-ink-muted">
+        Puede que el enlace esté mal escrito o que la página haya cambiado de dirección.
+      </p>
+      <div class="mt-2 flex flex-col gap-3 sm:flex-row">
+        <Button href="/" size="lg">Ir al inicio</Button>
+        <Button href="/blog" variant="outline" size="lg">Ver el blog</Button>
+      </div>
+    </div>
+  </Section>
+</PageLayout>

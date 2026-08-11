@@ -1,0 +1,84 @@
+---
+/**
+ * Listado de posts por tag.
+ *
+ * Los tags NO se meten al sitemap con prioridad alta ni se indexan a la
+ * ligera: son páginas de contenido delgado que compiten con los posts reales.
+ * Aquí se indexan solo si el tag tiene al menos 3 artículos, que es cuando
+ * la página empieza a tener valor propio.
+ */
+import PostCard from "@components/sections/PostCard.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import PageLayout from "@layouts/PageLayout.astro";
+import { getPublishedPosts, tagToSlug } from "@lib/blog";
+import type { GetStaticPaths } from "astro";
+import type { CollectionEntry } from "astro:content";
+
+export const getStaticPaths = (async () => {
+  const posts = await getPublishedPosts();
+  const byTag = new Map<string, { label: string; posts: CollectionEntry<"blog">[] }>();
+
+  for (const post of posts) {
+    for (const tag of post.data.tags) {
+      const slug = tagToSlug(tag);
+      const bucket = byTag.get(slug) ?? { label: tag, posts: [] };
+      bucket.posts.push(post);
+      byTag.set(slug, bucket);
+    }
+  }
+
+  return [...byTag.entries()].map(([slug, { label, posts: tagPosts }]) => ({
+    params: { tag: slug },
+    props: { label, posts: tagPosts },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  label: string;
+  posts: CollectionEntry<"blog">[];
+}
+
+const { label, posts } = Astro.props;
+
+const MIN_POSTS_TO_INDEX = 3;
+---
+
+<PageLayout
+  pageType="CollectionPage"
+  seo={{
+    title: `${label} — artículos`,
+    description: `Todos los artículos sobre ${label.toLowerCase()} en el blog de Para Siempre Juntos.`,
+    keywords: [label],
+    noindex: posts.length < MIN_POSTS_TO_INDEX,
+    breadcrumbs: [
+      { name: "Blog", href: "/blog" },
+      { name: label, href: `/blog/tag/${tagToSlug(label)}` },
+    ],
+  }}
+>
+  <Section spacing="sm">
+    <SectionHeading
+      eyebrow="Tag"
+      title={label}
+      subtitle={`${posts.length} ${posts.length === 1 ? "artículo" : "artículos"}`}
+      as="h1"
+      size="h1"
+    />
+  </Section>
+
+  <Section spacing="sm">
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {posts.map((post) => <PostCard post={post} />)}
+    </div>
+
+    <p class="mt-12 text-center">
+      <a
+        href="/blog"
+        class="text-primary hover:text-primary-hover text-sm font-medium underline underline-offset-4"
+      >
+        ← Ver todos los artículos
+      </a>
+    </p>
+  </Section>
+</PageLayout>

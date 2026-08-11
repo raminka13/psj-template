@@ -1,0 +1,290 @@
+/* ==========================================================================
+ *  TOKENS DE DISEÑO — EL ÚNICO ARCHIVO QUE HACE FALTA EDITAR PARA RE-MARCAR
+ * ==========================================================================
+ *
+ *  Cómo funciona:
+ *    1. Aquí se definen todos los valores de diseño de la página.
+ *    2. src/styles/global.css los conecta con Tailwind.
+ *    3. Los componentes solo usan clases (bg-primary, rounded-card, py-section)
+ *       y nunca valores literales.
+ *
+ *  Resultado: cambiar --brand-primary aquí cambia botones, links, badges,
+ *  focus rings y acentos de TODA la página, sin tocar ni un componente.
+ *
+ *  Hay dos bloques y la diferencia importa:
+ *
+ *    :root { }   → valores crudos con nombres propios (marca, superficies).
+ *                  global.css los alias-ea a utilidades con `@theme inline`.
+ *
+ *    @theme { }  → valores que Tailwind convierte en utilidades directamente,
+ *                  porque su nombre ya cae en un namespace suyo
+ *                  (--radius-*, --shadow-*, --ease-*, --spacing-*, --text-*).
+ *                  Siguen siendo custom properties normales, así que
+ *                  sobrescribirlas en un ancestro también funciona.
+ *
+ *  Se usa oklch() a propósito y no hex: al mezclar y aclarar colores en oklch
+ *  la luminosidad percibida se mantiene constante, así que los estados
+ *  hover/soft salen bien para cualquier tono. Con hex/HSL los amarillos y
+ *  cianes se ven lavados y los azules se ensucian.
+ *  Formato: oklch(luminosidad croma tono) — L de 0 a 1, C de 0 a ~0.4, H 0-360.
+ *
+ *  ── POR QUÉ LAS MEZCLAS SON `in oklab` Y NO `in oklch` ──────────────────
+ *  Los colores se DECLARAN en oklch, pero se MEZCLAN en oklab. No es un
+ *  descuido: oklch es un espacio polar, así que al mezclar interpola el TONO.
+ *
+ *  --surface es oklch(1 0 0): croma 0, pero tono 0 (rojo) declarado de forma
+ *  explícita. Mezclar un verde (tono 150) con él en oklch interpola el tono
+ *  de 150 hacia 0 y devuelve un ROSA pálido, no un verde pálido. Pasaba con
+ *  todos los tonos `-soft`: salían rosados sin importar el color de partida.
+ *
+ *  oklab es rectangular: no hay tono que interpolar, solo se mezclan L, a y b.
+ *  El resultado conserva el tono correcto siempre.
+ *
+ *  (Con el keyword `black` no se notaba, porque su tono es "powerless" y CSS
+ *  lo hereda del otro color. Por eso los `-hover` sí se veían bien y el error
+ *  pasó desapercibido.)
+ *
+ *  Si alguna vez cambias `in oklab` por `in oklch` aquí, vuelve el bug.
+ * ========================================================================== */
+
+:root {
+  /* ══ 1. MARCA ═══════════════════════════════════════════════════════════
+   * Cambiando estos tres colores cambia la identidad completa de la página.
+   *
+   * REGLA DE USO: un solo acento por vista. `primary` es el que se ve; los
+   * otros dos existen para estados y para los presets de funnel, y NO deben
+   * competir en la misma pantalla. Tres colores de marca peleando a la vez es
+   * lo que hace que una página se lea como plantilla y no como marca.
+   *
+   * El tono de primary se eligió con dos criterios:
+   *   1. Salir del azul-violeta (~264), que es el acento por defecto de
+   *      cualquier interfaz generada por IA y no dice nada de PSJ.
+   *   2. Mantener distancia de tono con los estados, para que un botón nunca
+   *      se confunda con un error o un éxito. 205 queda a 55° del verde de
+   *      éxito, 130° del ámbar y 180° del rojo. Si cambias este tono, vuelve
+   *      a comprobar esas distancias. */
+
+  --brand-primary: oklch(0.5 0.11 205); /* Teal profundo — acción principal */
+  --brand-secondary: oklch(0.72 0.15 45); /* Ámbar — solo estados/presets */
+  --brand-accent: oklch(0.68 0.17 155); /* Verde — solo estados/presets */
+
+  /* Texto que va ENCIMA de cada color de marca.
+   * Si cambias a un color de marca claro (amarillo, lima, cian), pon aquí un
+   * tono oscuro o el texto quedará ilegible sobre el botón. */
+  --brand-primary-on: oklch(0.99 0 0);
+  --brand-secondary-on: oklch(0.25 0.03 45);
+  --brand-accent-on: oklch(0.99 0 0);
+
+  /* ── Derivados automáticos — NO EDITAR ───────────────────────────────
+   * Se recalculan solos al cambiar el color base de arriba. */
+  --brand-primary-hover: color-mix(in oklab, var(--brand-primary) 88%, black);
+  --brand-primary-active: color-mix(in oklab, var(--brand-primary) 76%, black);
+  --brand-primary-soft: color-mix(in oklab, var(--brand-primary) 10%, var(--surface));
+  --brand-primary-muted: color-mix(in oklab, var(--brand-primary) 22%, var(--surface));
+
+  --brand-secondary-hover: color-mix(in oklab, var(--brand-secondary) 88%, black);
+  --brand-secondary-soft: color-mix(in oklab, var(--brand-secondary) 14%, var(--surface));
+
+  --brand-accent-hover: color-mix(in oklab, var(--brand-accent) 88%, black);
+  --brand-accent-soft: color-mix(in oklab, var(--brand-accent) 14%, var(--surface));
+
+  /* ══ 2. SUPERFICIES Y TEXTO ═════════════════════════════════════════════
+   * Los neutros llevan un tinte CÁLIDO (~70) mientras el acento es frío (205).
+   * Es deliberado: el calor de la marca lo dan los grises y el papel, no el
+   * acento. Así el acento puede ser sobrio y la página seguir sintiéndose
+   * cercana. Con neutros teñidos del mismo azul del acento, todo se lee frío
+   * y corporativo, que es lo contrario de lo que PSJ necesita.
+   *
+   * El tinte es bajísimo a propósito (croma 0.004-0.02). Subirlo lleva al
+   * beige-crema de catálogo artesanal, que es su propio cliché. */
+
+  --surface: oklch(1 0 0); /* Fondo de página */
+  --surface-muted: oklch(0.976 0.004 70); /* Secciones alternas */
+  --surface-raised: oklch(1 0 0); /* Tarjetas, popovers */
+  --surface-inverse: oklch(0.22 0.014 70); /* Bloques oscuros sobre claro */
+
+  --ink: oklch(0.23 0.012 70); /* Texto principal */
+  --ink-muted: oklch(0.52 0.012 70); /* Texto secundario */
+  /* 0.56 y no más claro: es texto real (placeholders, pies de foto) y tiene
+   * que pasar 4.5:1 sobre el fondo. Medido, da 4.68:1. A 0.62 se quedaba en
+   * 3.65 y no cumplía, aunque "se viera bien". */
+  --ink-subtle: oklch(0.56 0.011 70); /* Placeholders, captions */
+  --ink-inverse: oklch(0.98 0 0); /* Texto sobre surface-inverse */
+
+  --line: oklch(0.905 0.005 70); /* Bordes */
+  --line-strong: oklch(0.83 0.008 70); /* Bordes con más presencia */
+
+  /* ══ 3. ESTADOS ═════════════════════════════════════════════════════════ */
+
+  /* Estos tonos se usan como TEXTO sobre su propio `-soft`, así que su
+   * luminosidad está fijada por el contraste, no por gusto. Los valores están
+   * medidos: verde 5.05:1 y rojo 5.72:1 sobre sus fondos suaves.
+   *
+   * Un verde más vivo se ve mejor en un swatch y es ilegible en un mensaje de
+   * éxito. Si los subes, vuelve a medir: el `-soft` se recalcula a partir de
+   * ellos, así que aclarar el texto también aclara su fondo y el contraste
+   * apenas mejora. */
+  --success: oklch(0.48 0.15 150);
+  --warning: oklch(0.75 0.15 75); /* Solo como fondo, nunca como texto */
+  --danger: oklch(0.5 0.2 25);
+  --success-soft: color-mix(in oklab, var(--success) 12%, var(--surface));
+  --warning-soft: color-mix(in oklab, var(--warning) 14%, var(--surface));
+  --danger-soft: color-mix(in oklab, var(--danger) 10%, var(--surface));
+
+  /* ══ 4. MEDIDAS Y RITMO ═════════════════════════════════════════════════ */
+
+  --container-gutter: 1.5rem; /* Margen lateral en móvil */
+  --measure: 68ch; /* Ancho de lectura cómodo para texto largo */
+  --header-h: 4.5rem; /* Alto del header sticky */
+  --border-w: 1px;
+
+  /* ══ 5. FOCO (accesibilidad) ════════════════════════════════════════════ */
+
+  --ring-w: 2px;
+  --ring-offset: 2px;
+  --ring-color: var(--brand-primary);
+
+  /* ══ 6. AJUSTES TIPOGRÁFICOS ════════════════════════════════════════════
+   * --font-body y --font-heading los inyecta Astro desde src/config/fonts.ts. */
+
+  /* Tracking casi neutro porque el display es una SERIF. Las grotescas piden
+   * -0.02em o más para cerrar huecos; una serif ya trae ese ajuste dibujado en
+   * las serifas, y apretarla más pega los remates y ensucia el titular. Si
+   * cambias el display a una sans, baja esto a -0.02em. */
+  --tracking-display: -0.005em;
+  --leading-display: 1.1;
+  --leading-body: 1.65;
+
+  color-scheme: light;
+}
+
+/* ==========================================================================
+ *  7. TOKENS QUE YA SON UTILIDADES DE TAILWIND
+ * ==========================================================================
+ *  Estos nombres caen en namespaces de Tailwind, así que cada uno genera su
+ *  clase automáticamente. No hace falta declararlos en global.css.
+ * ========================================================================== */
+
+@theme {
+  /* ── Bordes redondeados → rounded-btn, rounded-card, rounded-image… ────
+   * Semánticos, no numéricos: `rounded-card` sigue significando lo mismo
+   * aunque cambies el valor; `rounded-xl` no.
+   *
+   * Look anguloso para una página: pon todos en 0.
+   * Look muy suave: sube card a 2rem y btn a 9999px. */
+  --radius-btn: 0.75rem;
+  --radius-input: 0.625rem;
+  --radius-card: 1.25rem;
+  --radius-image: 1.5rem;
+  --radius-badge: 9999px;
+  --radius-modal: 1.5rem;
+  --radius-pill: 9999px;
+
+  /* ── Sombras → shadow-card, shadow-lg, shadow-brand ────────────────────
+   * Teñidas con el tono cálido de los neutros, no en negro puro. Una sombra
+   * negra sobre un fondo cálido se ve sucia y "pegada"; teñirla del mismo
+   * tono que el papel la integra. */
+  --shadow-sm: 0 1px 2px oklch(0.2 0.01 70 / 0.05);
+  --shadow-card: 0 1px 2px oklch(0.2 0.01 70 / 0.04), 0 8px 24px oklch(0.2 0.01 70 / 0.06);
+  --shadow-lg: 0 2px 4px oklch(0.2 0.01 70 / 0.04), 0 16px 48px oklch(0.2 0.01 70 / 0.1);
+  /* Sombra teñida con el color de marca — para el CTA principal */
+  --shadow-brand: 0 8px 24px color-mix(in oklab, var(--brand-primary) 28%, transparent);
+
+  /* ── Curvas de animación → ease-out-soft, ease-spring ─────────────────
+   * Cambiar estas curvas cambia el "carácter" de todas las transiciones.
+   *
+   * Nunca uses ease-in para interfaz: arranca lento justo en el instante que
+   * la persona está mirando, y hace que todo se sienta pesado aunque dure lo
+   * mismo. Para algo que entra o sale, siempre ease-out. */
+  --ease-out-soft: cubic-bezier(0.23, 1, 0.32, 1); /* Salida fuerte */
+  --ease-smooth: cubic-bezier(0.77, 0, 0.175, 1); /* Movimiento en pantalla */
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* Con rebote ligero */
+
+  /* ── Espaciado de sección → py-section, gap-section ────────────────────
+   * Fluido, igual que la tipografía. Un valor fijo de 6rem que se ve elegante
+   * en escritorio deja un vacío enorme en una pantalla de 375px, donde esos
+   * 96px son casi un tercio del alto visible. Aquí baja a ~3.4rem en móvil y
+   * sube a 6rem en escritorio. */
+  --spacing-section: clamp(3.5rem, 2rem + 6vw, 6rem);
+  --spacing-section-sm: clamp(2.5rem, 1.5rem + 3vw, 3.5rem);
+  --spacing-header: 4.5rem;
+
+  /* ── Ancho de página → max-w-page ────────────────────────────────────── */
+  --container-page: 80rem;
+
+  /* ── Escala tipográfica fluida → text-display, text-h1, text-lead… ────
+   * clamp(mínimo, preferido, máximo): el tamaño crece con el viewport sin
+   * media queries y sin pasarse en pantallas grandes. */
+  /* El tope es 4.25rem (68px) y no 5rem, medido: en una columna de hero de
+   * ~700px, un titular de 7-8 palabras entra en 2 líneas hasta 68px y salta a
+   * 3 por encima. Un titular de 3 líneas no es un problema de copy sino de
+   * escala tipográfica, y aquí se resuelve en la escala. */
+  --text-display: clamp(2.5rem, 1.6rem + 4vw, 4.25rem);
+  --text-display--line-height: 1.05;
+  --text-h1: clamp(2.25rem, 1.5rem + 3.2vw, 3.5rem);
+  --text-h1--line-height: 1.1;
+  --text-h2: clamp(1.75rem, 1.3rem + 1.9vw, 2.5rem);
+  --text-h2--line-height: 1.15;
+  --text-h3: clamp(1.375rem, 1.15rem + 0.9vw, 1.75rem);
+  --text-h3--line-height: 1.25;
+  --text-lead: clamp(1.125rem, 1.05rem + 0.35vw, 1.375rem);
+  --text-lead--line-height: 1.55;
+}
+
+/* ==========================================================================
+ *  8. MODO OSCURO
+ * ==========================================================================
+ *  Se activa con data-theme="dark" en <html>. El script inline de
+ *  BaseLayout.astro lo pone antes del primer paint (leyendo localStorage y,
+ *  si no hay nada guardado, la preferencia del sistema) para que no haya
+ *  destello blanco.
+ *
+ *  Solo se redefinen superficies, tinta y sombras. Los colores de marca se
+ *  suben ~8% de luminosidad: el mismo azul sobre fondo oscuro se percibe más
+ *  apagado, y sin ese ajuste los botones pierden presencia.
+ *
+ *  Los derivados (-hover, -soft, color-mix) se recalculan solos aquí, porque
+ *  [data-theme="dark"] aplica al mismo elemento <html> que :root.
+ * ========================================================================== */
+
+[data-theme="dark"] {
+  /* Mismo tinte cálido (70) que en claro, para que la marca no cambie de
+   * temperatura al alternar tema. */
+  --surface: oklch(0.18 0.008 70);
+  --surface-muted: oklch(0.22 0.009 70);
+  --surface-raised: oklch(0.24 0.009 70);
+  --surface-inverse: oklch(0.96 0.004 70);
+
+  --ink: oklch(0.96 0.004 70);
+  --ink-muted: oklch(0.76 0.009 70);
+  --ink-subtle: oklch(0.64 0.009 70);
+  --ink-inverse: oklch(0.2 0.012 70);
+
+  --line: oklch(0.31 0.008 70);
+  --line-strong: oklch(0.43 0.01 70);
+
+  /* El teal sube bastante de luminosidad y croma: un teal oscuro sobre fondo
+   * oscuro desaparece, mucho más que un azul. */
+  --brand-primary: oklch(0.72 0.12 205);
+  --brand-secondary: oklch(0.76 0.14 45);
+  --brand-accent: oklch(0.72 0.15 155);
+
+  /* Al subir la luminosidad del acento, el texto encima TIENE que invertirse.
+   * Texto blanco sobre este teal claro se queda en ~2:1 y es ilegible. Es el
+   * error clásico al portar una marca a modo oscuro: se ajusta el fondo del
+   * botón y se olvida su etiqueta. */
+  --brand-primary-on: oklch(0.18 0.012 205);
+  --brand-accent-on: oklch(0.18 0.012 155);
+
+  /* Los tonos de estado se invierten igual que la marca. Con los valores de
+   * modo claro (verde 0.48, rojo 0.50) sobre un fondo suave oscuro, el texto
+   * se hunde: medido, el rojo caía a 3.68:1. Medidos aquí: 6.04 y 5.43. */
+  --success: oklch(0.68 0.15 150);
+  --danger: oklch(0.68 0.18 25);
+
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 8px 24px oklch(0 0 0 / 0.35);
+  --shadow-lg: 0 2px 4px oklch(0 0 0 / 0.3), 0 16px 48px oklch(0 0 0 / 0.45);
+
+  color-scheme: dark;
+}

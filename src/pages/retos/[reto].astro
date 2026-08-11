@@ -1,0 +1,177 @@
+---
+/**
+ * ============================================================================
+ *  Página individual de un reto
+ * ============================================================================
+ *  Se genera una por cada archivo de src/content/retos/. Todo el contenido
+ *  sale del frontmatter: el copy, las FAQs, qué formulario usa y qué
+ *  testimonios muestra. Añadir un reto es añadir un .md, sin tocar esta
+ *  página ni el menú ni el footer.
+ *
+ *  Reutiliza las secciones que ya existen (Hero, Steps, Testimonials,
+ *  FaqSection, Form, CtaBanner) en vez de inventar maqueta nueva.
+ * ============================================================================
+ */
+import CtaBanner from "@components/cta/CtaBanner.astro";
+import Form from "@components/forms/Form.astro";
+import FaqSection from "@components/sections/FaqSection.astro";
+import Hero from "@components/sections/Hero.astro";
+import Steps from "@components/sections/Steps.astro";
+import Testimonials from "@components/sections/Testimonials.astro";
+import Container from "@components/ui/Container.astro";
+import Prose from "@components/ui/Prose.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import PageLayout from "@layouts/PageLayout.astro";
+import { getFaqs, getRetos, getTestimonios, type Reto } from "@lib/content";
+import { course } from "@lib/schema";
+import type { GetStaticPaths } from "astro";
+import { render } from "astro:content";
+import { Icon } from "astro-icon/components";
+
+export const getStaticPaths = (async () => {
+  const retos = await getRetos();
+  return retos.map((reto) => ({ params: { reto: reto.id }, props: { reto } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  reto: Reto;
+}
+
+const { reto } = Astro.props;
+const d = reto.data;
+const { Content } = await render(reto);
+
+// Las FAQs propias del reto van primero; las generales completan.
+const generales = await getFaqs();
+const faqs = [...d.faqs, ...generales];
+
+const testimonios = await getTestimonios({
+  programa: d.testimonialKey,
+  limit: 3,
+});
+
+// Sin `offer`: los retos del template no declaran precio y no se inventa uno.
+// Poner una cifra falsa en el schema es declarar un dato falso a Google.
+const schemaCurso = course({
+  name: d.title,
+  description: d.description,
+  url: `/retos/${reto.id}`,
+  workload: "PT15M",
+});
+---
+
+<PageLayout
+  pageType="ItemPage"
+  schemaExtra={[schemaCurso]}
+  seo={{
+    title: d.title,
+    description: d.description,
+    keywords: d.keywords,
+    faqs: d.faqs,
+    image: d.cover?.src,
+    imageAlt: d.coverAlt,
+    breadcrumbs: [
+      { name: "Retos", href: "/retos" },
+      { name: d.title, href: `/retos/${reto.id}` },
+    ],
+  }}
+>
+  <Hero
+    eyebrow={d.tagline}
+    title={d.title}
+    subtitle={d.promise}
+    primaryCta={{ label: "Empezar el reto", href: "#registro" }}
+    secondaryCta={{ label: "Ver todos los retos", href: "/retos" }}
+  />
+
+  {/* Datos de un vistazo. Franja propia, fuera del hero. */}
+  <Container>
+    <dl class="border-line grid gap-4 border-y py-4 text-sm sm:grid-cols-3 sm:gap-8">
+      {
+        [
+          { label: "Duración", value: d.duration, icon: "calendar-days" },
+          { label: "Dedicación", value: d.commitment, icon: "clock" },
+          { label: "Para quién", value: d.audience, icon: "user-round" },
+        ].map((item) => (
+          <div class="flex items-start gap-2.5">
+            <Icon name={`lucide:${item.icon}`} class="text-primary mt-0.5 size-4 shrink-0" />
+            <div>
+              <dt class="text-ink-subtle text-xs">{item.label}</dt>
+              <dd class="text-ink font-medium">{item.value}</dd>
+            </div>
+          </div>
+        ))
+      }
+    </dl>
+  </Container>
+
+  {/* Lo que se lleva: secuencia, porque tiene orden de importancia. */}
+  <Steps
+    id="que-incluye"
+    title="Cómo funciona por dentro"
+    items={d.highlights}
+    background="muted"
+  />
+
+  {/* Cuerpo del markdown + lista de lo que incluye, en dos columnas. */}
+  <Section>
+    <div class="grid gap-x-12 gap-y-10 lg:grid-cols-12">
+      <div class="lg:col-span-7">
+        <Prose>
+          <Content />
+        </Prose>
+      </div>
+
+      {
+        d.includes.length > 0 && (
+          <aside class="lg:col-span-4 lg:col-start-9">
+            <h2 class="font-display text-ink mb-4 text-lg font-semibold">Qué incluye</h2>
+            <ul class="divide-line border-line flex flex-col divide-y border-y">
+              {d.includes.map((item) => (
+                <li class="text-ink-muted flex items-start gap-2.5 py-3 text-sm">
+                  <Icon name="lucide:check" class="text-primary mt-0.5 size-4 shrink-0" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )
+      }
+    </div>
+  </Section>
+
+  {
+    testimonios.length > 0 && (
+      <Testimonials
+        id="testimonios"
+        eyebrow="Testimonios"
+        title="Lo que dicen quienes ya lo hicieron"
+        items={testimonios}
+      />
+    )
+  }
+
+  <Section id="registro" background="muted">
+    <div class="grid items-start gap-x-12 gap-y-10 lg:grid-cols-12">
+      <div class="lg:col-span-5">
+        <SectionHeading
+          title={`Empieza ${d.title}`}
+          subtitle="Déjanos tus datos y te mandamos el acceso con todos los detalles."
+        />
+      </div>
+      <div class="lg:col-span-6 lg:col-start-7">
+        <Form id={d.formId} location={`reto-${reto.id}`} />
+      </div>
+    </div>
+  </Section>
+
+  <FaqSection
+    eyebrow="Preguntas"
+    title="Lo que más nos preguntan"
+    items={faqs}
+    background="default"
+  />
+
+  <CtaBanner id="empezar-reto" anchorId="cta-final" location={`reto-${reto.id}`} />
+</PageLayout>

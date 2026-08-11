@@ -1,0 +1,114 @@
+---
+/**
+ * ============================================================================
+ *  Captura de UTMs de primer toque
+ * ============================================================================
+ *  El problema que resuelve: las UTMs llegan en la PRIMERA página que alguien
+ *  visita, pero la conversión casi nunca pasa ahí. Alguien entra por un anuncio
+ *  a un post del blog, lee, navega a la landing y ahí se registra. Si solo se
+ *  leyera la URL del momento del envío, ese lead se atribuiría a "directo" y la
+ *  campaña que sí lo trajo se vería como si no funcionara.
+ *
+ *  Por eso se guarda el PRIMER toque en sessionStorage y se conserva durante
+ *  toda la sesión, aunque la persona navegue por diez páginas.
+ *
+ *  Se monta una sola vez, en BaseLayout.
+ * ============================================================================
+ */
+---
+
+<script is:inline>
+  (function () {
+    var KEY = "psj_attribution";
+
+    var PARAMS = [
+      ["utm_source", "utmSource"],
+      ["utm_medium", "utmMedium"],
+      ["utm_campaign", "utmCampaign"],
+      ["utm_term", "utmTerm"],
+      ["utm_content", "utmContent"],
+      ["gclid", "gclid"],
+      ["fbclid", "fbclid"],
+    ];
+
+    function read() {
+      try {
+        return JSON.parse(sessionStorage.getItem(KEY) || "{}");
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function capture() {
+      var stored = read();
+
+      // Primer toque gana: si ya hay atribución guardada, no se pisa. Una
+      // segunda visita desde otra campaña no debe robarle el crédito a la que
+      // trajo a la persona.
+      if (stored.utmSource || stored.gclid || stored.fbclid) return stored;
+
+      var url = new URL(window.location.href);
+      var data = {};
+      var found = false;
+
+      PARAMS.forEach(function (pair) {
+        var value = url.searchParams.get(pair[0]);
+        if (value) {
+          data[pair[1]] = value;
+          found = true;
+        }
+      });
+
+      // El referrer solo interesa si es externo: uno interno solo dice desde
+      // qué página del propio sitio se llegó, que ya se sabe por pagePath.
+      try {
+        if (document.referrer && new URL(document.referrer).host !== window.location.host) {
+          data.referrer = document.referrer;
+          found = true;
+        }
+      } catch (e) {}
+
+      // La primera página de la sesión, que es la que el anuncio pagó.
+      if (found) {
+        data.landingPage = window.location.pathname;
+        try {
+          sessionStorage.setItem(KEY, JSON.stringify(data));
+        } catch (e) {
+          // sessionStorage bloqueado: la atribución se pierde, pero el
+          // formulario sigue funcionando. Nunca romper el envío por esto.
+        }
+      }
+
+      return data;
+    }
+
+    var attribution = capture();
+
+    // Inyecta la atribución en cada formulario justo antes de enviar. Se hace
+    // en el submit y no al cargar para que también aplique a formularios que
+    // aparecieran después (modales, contenido cargado dinámicamente).
+    document.addEventListener(
+      "submit",
+      function (event) {
+        var form = event.target;
+        if (!form || !form.matches || !form.matches("form[data-psj-form]")) return;
+
+        var input = form.querySelector('input[name="_utm"]');
+        if (!input) return;
+
+        var payload = {};
+        var current = read();
+        for (var key in current) payload[key] = current[key];
+        for (var key2 in attribution) if (!payload[key2]) payload[key2] = attribution[key2];
+
+        payload.pagePath = window.location.pathname;
+        payload.pageUrl = window.location.href;
+
+        input.value = JSON.stringify(payload);
+      },
+      // capture:true para que corra ANTES del listener de Form.astro, que es
+      // quien arma el FormData. Si corriera después, el campo iría vacío.
+      true,
+    );
+  })();
+</script>

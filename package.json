@@ -1,0 +1,37 @@
+{
+  "name": "psj-template",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Template base de Astro para las páginas de Para Siempre Juntos (PSJ)",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "og": "node scripts/generate-og.mjs",
+    "format": "prettier --write \"**/*.{astro,ts,js,mjs,json,css,md,mdx}\"",
+    "format:check": "prettier --check \"**/*.{astro,ts,js,mjs,json,css,md,mdx}\"",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^7.0.5",
+    "@astrojs/netlify": "^8.2.1",
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
+    "@tailwindcss/vite": "^4.3.3",
+    "astro": "^7.2.1",
+    "astro-icon": "^1.1.5",
+    "sharp": "^0.35.3",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@iconify-json/lucide": "^1.2.123",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "typescript": "^6.0.3"
+  }
+}

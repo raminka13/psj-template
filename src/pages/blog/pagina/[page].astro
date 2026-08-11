@@ -1,0 +1,55 @@
+---
+/**
+ * Páginas 2 en adelante del índice del blog.
+ *
+ * La página 1 NO se genera aquí: vive en /blog. Si se generara también en
+ * /blog/pagina/1 habría dos URLs con el mismo contenido, que es contenido
+ * duplicado a ojos de Google.
+ */
+import BlogList from "@components/sections/BlogList.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import PageLayout from "@layouts/PageLayout.astro";
+import { getPublishedPosts, paginatePosts, POSTS_PER_PAGE } from "@lib/blog";
+import type { GetStaticPaths } from "astro";
+
+export const getStaticPaths = (async () => {
+  const posts = await getPublishedPosts();
+  const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE);
+
+  // Arranca en 2 a propósito. Si solo hay una página, no genera nada.
+  return Array.from({ length: Math.max(0, totalPages - 1) }, (_, index) => {
+    const pageNumber = index + 2;
+    return {
+      params: { page: String(pageNumber) },
+      props: { page: paginatePosts(posts, pageNumber) },
+    };
+  });
+}) satisfies GetStaticPaths;
+
+// Sin `interface Props`: cuando getStaticPaths devuelve `props`, Astro ya
+// infiere el tipo de Astro.props a partir de ahí, y declararlo otra vez solo
+// abre la puerta a que los dos se desincronicen.
+const { page } = Astro.props;
+---
+
+<PageLayout
+  pageType="CollectionPage"
+  seo={{
+    title: `Blog — página ${page.currentPage}`,
+    description: `Artículos sobre fe, sabiduría y propósito. Página ${page.currentPage} de ${page.totalPages}.`,
+    breadcrumbs: [{ name: "Blog", href: "/blog" }],
+  }}
+>
+  <Section spacing="sm">
+    <SectionHeading
+      eyebrow="Blog"
+      title="Ideas para la semana"
+      subtitle={`Página ${page.currentPage} de ${page.totalPages}`}
+      as="h1"
+      size="h1"
+    />
+  </Section>
+
+  <BlogList page={page} />
+</PageLayout>

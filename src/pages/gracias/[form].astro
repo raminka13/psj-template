@@ -1,0 +1,34 @@
+---
+/**
+ * Página de gracias de cada formulario, generada desde el registro.
+ *
+ * Son ESTÁTICAS: el endpoint solo redirige aquí, no las renderiza. Así el
+ * "gracias" de un opt-in y el de un registro a WhatsApp dicen cosas distintas
+ * sin costar una función por visita.
+ *
+ * `site.noindexPatterns` ya incluye `^/gracias`, así que quedan fuera del
+ * sitemap; ConfirmationLayout además fuerza el noindex en el <head>.
+ */
+import CtaButton from "@components/cta/CtaButton.astro";
+import { getAllForms, type FormDefinition } from "@config/forms";
+import ConfirmationLayout from "@layouts/ConfirmationLayout.astro";
+import type { GetStaticPaths } from "astro";
+
+export const getStaticPaths = (async () => {
+  return getAllForms().map((form) => ({
+    params: { form: form.id },
+    props: { form },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  form: FormDefinition;
+}
+
+const { form } = Astro.props;
+const { title, message, steps, ctaId } = form.confirmation;
+---
+
+<ConfirmationLayout title={title} message={message} steps={steps}>
+  {ctaId && <CtaButton id={ctaId} size="lg" location="gracias" />}
+</ConfirmationLayout>

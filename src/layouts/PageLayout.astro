@@ -1,0 +1,49 @@
+---
+/**
+ * ============================================================================
+ *  PageLayout — el layout normal: header + contenido + footer
+ * ============================================================================
+ *  Es el que usa el 90% de las páginas.
+ *
+ *      ---
+ *      import PageLayout from "@layouts/PageLayout.astro";
+ *      const faqs = [{ q: "…", a: "…" }];
+ *      ---
+ *      <PageLayout seo={{ title: "Reto de Sabiduría", keywords: ["…"], faqs }}>
+ *        …
+ *      </PageLayout>
+ *
+ *  Para páginas sin distracciones (venta larga, checkout, replay) usa
+ *  BaseLayout directamente.
+ * ============================================================================
+ */
+import Footer from "@components/sections/Footer.astro";
+import Header from "@components/sections/Header.astro";
+import type { ThemeOverrides } from "@config/theme";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import type { SchemaNode } from "@lib/schema";
+import type { SeoProps } from "@lib/seo";
+
+interface Props {
+  seo?: SeoProps;
+  theme?: ThemeOverrides;
+  pageType?: "WebPage" | "CollectionPage" | "ItemPage" | "AboutPage" | "ContactPage";
+  schemaExtra?: SchemaNode[];
+  /** Oculta el header, por ejemplo en una landing de un solo objetivo. */
+  hideHeader?: boolean;
+  hideFooter?: boolean;
+}
+
+const { seo, theme, pageType, schemaExtra, hideHeader = false, hideFooter = false } = Astro.props;
+---
+
+<BaseLayout seo={seo} theme={theme} pageType={pageType} schemaExtra={schemaExtra}>
+  {!hideHeader && <Header />}
+
+  {/* id="main" es el destino del enlace "Saltar al contenido" de BaseLayout. */}
+  <main id="main">
+    <slot />
+  </main>
+
+  {!hideFooter && <Footer />}
+</BaseLayout>

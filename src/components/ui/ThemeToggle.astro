@@ -1,0 +1,68 @@
+---
+/**
+ * Alterna entre claro y oscuro, y recuerda la elección en localStorage.
+ *
+ * El estado real vive en el atributo data-theme de <html>, que el script
+ * inline de BaseLayout ya puso antes del primer paint. Este botón solo lo
+ * cambia.
+ */
+---
+
+<button
+  type="button"
+  id="theme-toggle"
+  class="rounded-btn text-ink-muted ease-out-soft hover:bg-surface-muted hover:text-ink inline-flex size-10 items-center justify-center transition-colors duration-200"
+  aria-label="Cambiar entre tema claro y oscuro"
+>
+  {/* El icono se intercambia por CSS según data-theme, sin tocar el DOM. */}
+  <svg
+    class="size-5 dark:hidden"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="4"></circle>
+    <path
+      d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"
+    ></path>
+  </svg>
+  <svg
+    class="hidden size-5 dark:block"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+  </svg>
+</button>
+
+<script>
+  function setupThemeToggle() {
+    const button = document.getElementById("theme-toggle");
+    if (!button) return;
+
+    button.addEventListener("click", () => {
+      const root = document.documentElement;
+      const next = root.dataset.theme === "dark" ? "light" : "dark";
+      root.dataset.theme = next;
+
+      try {
+        localStorage.setItem("theme", next);
+      } catch {
+        // localStorage bloqueado: el cambio aplica igual, solo no se recuerda.
+      }
+    });
+  }
+
+  // Solo por evento, sin llamada directa: astro:page-load también dispara en
+  // la carga inicial. Llamarlo además a mano registraría dos listeners y el
+  // segundo desharía el cambio del primero — el botón parecería no funcionar.
+  document.addEventListener("astro:page-load", setupThemeToggle);
+</script>

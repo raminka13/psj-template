@@ -1,0 +1,106 @@
+---
+/**
+ * ============================================================================
+ *  Barra fija de CTA en móvil
+ * ============================================================================
+ *  Aparece al hacer scroll y acompaña durante toda la landing. En páginas
+ *  largas sube bastante la conversión, porque la persona decide a la mitad y
+ *  no tiene que buscar el botón.
+ *
+ *  Dos cuidados que la hacen tolerable:
+ *
+ *  1. Se ESCONDE cuando el CTA principal está en pantalla. Ver dos veces el
+ *     mismo botón, uno encima del otro, se lee como error de maquetación.
+ *  2. Solo en móvil. En escritorio hay espacio de sobra y una barra fija abajo
+ *     solo tapa contenido.
+ *
+ *  Se le da al <body> un padding inferior mientras está visible para que la
+ *  barra no tape el final de la página.
+ * ============================================================================
+ */
+import Button from "@components/ui/Button.astro";
+import { getCta } from "@config/ctas";
+
+interface Props {
+  id: string;
+  /** Selector del CTA principal. Si está visible, la barra se oculta. */
+  hideNear?: string;
+  /** Píxeles de scroll antes de aparecer. */
+  showAfter?: number;
+  location?: string;
+}
+
+const { id, hideNear, showAfter = 600, location = "sticky" } = Astro.props;
+
+const cta = getCta(id);
+---
+
+<div
+  data-cta-sticky
+  data-hide-near={hideNear}
+  data-show-after={showAfter}
+  class="ease-out-soft border-line bg-surface/95 pointer-events-none fixed inset-x-0 bottom-0 z-40 translate-y-full border-t p-3 opacity-0 backdrop-blur-md transition-[transform,opacity] duration-300 md:hidden"
+>
+  <div class="flex items-center gap-3">
+    <div class="min-w-0 flex-1">
+      <p class="text-ink truncate text-sm font-semibold">{cta.title ?? cta.label}</p>
+      {cta.note && <p class="text-ink-subtle truncate text-xs">{cta.note}</p>}
+    </div>
+
+    <Button
+      href={cta.href}
+      variant={cta.variant ?? "primary"}
+      size="sm"
+      external={cta.external}
+      class="shrink-0"
+      data-cta={id}
+      data-cta-location={location}
+    >
+      {cta.label}
+    </Button>
+  </div>
+</div>
+
+<style>
+  [data-cta-sticky][data-visible="true"] {
+    pointer-events: auto;
+    transform: translateY(0);
+    opacity: 1;
+  }
+</style>
+
+<script>
+  function setupStickyCta() {
+    const bar = document.querySelector<HTMLElement>("[data-cta-sticky]");
+    if (!bar || bar.dataset.ready === "true") return;
+    bar.dataset.ready = "true";
+
+    const showAfter = Number(bar.dataset.showAfter ?? 600);
+    const nearSelector = bar.dataset.hideNear;
+    const nearEl = nearSelector ? document.querySelector(nearSelector) : null;
+
+    let mainCtaVisible = false;
+
+    // IntersectionObserver y no getBoundingClientRect en cada scroll: el
+    // navegador avisa cuando cambia la visibilidad, sin forzar reflows.
+    if (nearEl) {
+      new IntersectionObserver(
+        (entries) => {
+          mainCtaVisible = entries[0]?.isIntersecting ?? false;
+          update();
+        },
+        { rootMargin: "0px 0px -20% 0px" },
+      ).observe(nearEl);
+    }
+
+    function update() {
+      const scrolled = window.scrollY > showAfter;
+      bar!.dataset.visible = String(scrolled && !mainCtaVisible);
+    }
+
+    window.addEventListener("scroll", update, { passive: true });
+    update();
+  }
+
+  document.addEventListener("astro:page-load", setupStickyCta);
+</script>

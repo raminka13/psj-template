@@ -1,0 +1,46 @@
+---
+/**
+ * CTA compacto para insertar a media lectura en un post.
+ *
+ * En MDX:
+ *     import CtaInline from "@components/cta/CtaInline.astro";
+ *     <CtaInline id="empezar-reto-form" location="mitad-post" />
+ *
+ * `not-prose` es necesario: sin eso los estilos de <Prose> se aplican a los
+ * enlaces de dentro y el botón termina subrayado como un link de texto.
+ */
+import Button from "@components/ui/Button.astro";
+import { getCta } from "@config/ctas";
+
+interface Props {
+  id: string;
+  location?: string;
+  /** Sobrescribe el título del registro. */
+  title?: string;
+  class?: string;
+}
+
+const { id, location = "inline", title, class: className = "" } = Astro.props;
+
+const cta = getCta(id);
+---
+
+<aside
+  class={`not-prose my-10 flex flex-col gap-4 rounded-card border border-primary-muted bg-primary-soft p-6 sm:flex-row sm:items-center sm:justify-between ${className}`}
+>
+  <div class="flex flex-col gap-1">
+    <p class="font-display text-ink text-lg font-semibold">{title ?? cta.title ?? cta.label}</p>
+    {cta.description && <p class="text-ink-muted text-sm">{cta.description}</p>}
+  </div>
+
+  <Button
+    href={cta.href}
+    variant={cta.variant ?? "primary"}
+    external={cta.external}
+    class="shrink-0"
+    data-cta={id}
+    data-cta-location={location}
+  >
+    {cta.label}
+  </Button>
+</aside>

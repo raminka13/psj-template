@@ -1,0 +1,19 @@
+---
+/**
+ * Gracias genérica. Respaldo para envíos que no vengan de un formulario del
+ * registro (por ejemplo, un checkout externo que redirige aquí).
+ */
+import CtaButton from "@components/cta/CtaButton.astro";
+import ConfirmationLayout from "@layouts/ConfirmationLayout.astro";
+---
+
+<ConfirmationLayout
+  title="¡Gracias!"
+  message="Recibimos tu información. En unos minutos te llega un correo de confirmación."
+  steps={[
+    "Revisa tu bandeja de entrada, y también promociones y spam.",
+    "Marca nuestro correo como importante para no perderte nada.",
+  ]}
+>
+  <CtaButton id="empezar-reto" size="lg" location="gracias-generica" />
+</ConfirmationLayout>

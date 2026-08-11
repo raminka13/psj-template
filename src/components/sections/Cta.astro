@@ -1,0 +1,23 @@
+---
+/**
+ * OBSOLETO — usa `@components/cta/CtaBanner.astro`.
+ *
+ * Se conserva para no romper páginas ya escritas; reenvía todas las props al
+ * componente nuevo, que además acepta `id` para tomar el texto del registro
+ * de CTAs (src/config/ctas.ts).
+ */
+import CtaBanner from "@components/cta/CtaBanner.astro";
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  primaryCta: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
+  note?: string;
+  id?: string;
+}
+
+const { id, ...rest } = Astro.props;
+---
+
+<CtaBanner {...rest} anchorId={id} />

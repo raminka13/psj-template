@@ -1,0 +1,107 @@
+---
+/**
+ * ============================================================================
+ *  Testimonios — composición editorial, no rejilla de tarjetas
+ * ============================================================================
+ *  Tres testimonios en tres tarjetas idénticas se leen como una tabla: los
+ *  tres pesan lo mismo, así que ninguno pesa. Aquí el primero se trata como
+ *  cita destacada, a mayor tamaño y sin caja, y los demás lo acompañan en una
+ *  columna secundaria. Es la jerarquía la que hace que uno se lea de verdad.
+ *
+ *  Marcado: <figure> / <blockquote> / <figcaption>. No es decorativo — así el
+ *  lector de pantalla relaciona la cita con quien la dijo, cosa que un div con
+ *  clases no hace.
+ * ============================================================================
+ */
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+
+export interface Testimonial {
+  quote: string;
+  name: string;
+  /** Contexto de la persona: ciudad, rol, programa que tomó. */
+  role?: string;
+  /** Iniciales para el avatar. Si falta, se calculan del nombre. */
+  initials?: string;
+}
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  items: Testimonial[];
+  background?: "default" | "muted" | "soft";
+  id?: string;
+}
+
+const { eyebrow, title, subtitle, items, background = "muted", id } = Astro.props;
+
+const [featured, ...rest] = items;
+
+function initialsOf(testimonial: Testimonial): string {
+  if (testimonial.initials) return testimonial.initials;
+  return testimonial.name
+    .split(" ")
+    .slice(0, 2)
+    .map((word) => word.charAt(0))
+    .join("")
+    .toUpperCase();
+}
+---
+
+<Section id={id} background={background}>
+  <SectionHeading eyebrow={eyebrow} title={title} subtitle={subtitle} />
+
+  <div class="mt-14 grid gap-x-12 gap-y-10 lg:grid-cols-12">
+    {/* Cita destacada: sin caja, a tamaño de titular. */}
+    {
+      featured && (
+        <figure class="flex flex-col gap-6 lg:col-span-7">
+          <blockquote class="font-display text-h2 text-ink font-medium text-balance">
+            <p>“{featured.quote}”</p>
+          </blockquote>
+
+          <figcaption class="flex items-center gap-3">
+            <span
+              class="rounded-badge bg-primary-soft font-display text-primary grid size-11 shrink-0 place-items-center text-sm font-bold"
+              aria-hidden="true"
+            >
+              {initialsOf(featured)}
+            </span>
+            <span class="flex flex-col">
+              <span class="text-ink font-semibold">{featured.name}</span>
+              {featured.role && <span class="text-ink-subtle text-sm">{featured.role}</span>}
+            </span>
+          </figcaption>
+        </figure>
+      )
+    }
+
+    {/* Los demás: columna secundaria, separados por hairline en vez de cajas. */}
+    {
+      rest.length > 0 && (
+        <div class="divide-line lg:border-line flex flex-col divide-y lg:col-span-5 lg:border-l lg:pl-10">
+          {rest.map((item, index) => (
+            <figure class={`flex flex-col gap-3 ${index === 0 ? "pb-6" : "py-6 last:pb-0"}`}>
+              <blockquote class="text-ink-muted">
+                <p>“{item.quote}”</p>
+              </blockquote>
+              <figcaption class="flex items-center gap-2.5">
+                <span
+                  class="rounded-badge bg-surface-raised border-line font-display text-ink-muted grid size-8 shrink-0 place-items-center border text-xs font-bold"
+                  aria-hidden="true"
+                >
+                  {initialsOf(item)}
+                </span>
+                <span class="text-sm">
+                  <span class="text-ink font-medium">{item.name}</span>
+                  {item.role && <span class="text-ink-subtle"> · {item.role}</span>}
+                </span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</Section>

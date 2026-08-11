@@ -1,0 +1,53 @@
+---
+/**
+ * CTA en caja, para barra lateral o final de post.
+ * Puede mostrar un botón o incrustar directamente el formulario del CTA.
+ *
+ *     <CtaCard id="empezar-reto-form" withForm />
+ */
+import Form from "@components/forms/Form.astro";
+import Button from "@components/ui/Button.astro";
+import Card from "@components/ui/Card.astro";
+import { getCta } from "@config/ctas";
+
+interface Props {
+  id: string;
+  location?: string;
+  /** Incrusta el formulario del CTA en vez de un botón que lleva a otra parte. */
+  withForm?: boolean;
+  class?: string;
+}
+
+const { id, location = "card", withForm = false, class: className = "" } = Astro.props;
+
+const cta = getCta(id);
+
+// Solo tiene sentido incrustar si el CTA declara un formulario.
+const showForm = withForm && Boolean(cta.formId);
+---
+
+<Card variant="elevated" class={`not-prose flex flex-col gap-4 ${className}`}>
+  <div class="flex flex-col gap-2">
+    <h3 class="font-display text-h3 text-ink font-semibold">{cta.title ?? cta.label}</h3>
+    {cta.description && <p class="text-ink-muted">{cta.description}</p>}
+  </div>
+
+  {
+    showForm ? (
+      <Form id={cta.formId!} location={location} submitLabel={cta.label} />
+    ) : (
+      <Button
+        href={cta.href}
+        variant={cta.variant ?? "primary"}
+        block
+        external={cta.external}
+        data-cta={id}
+        data-cta-location={location}
+      >
+        {cta.label}
+      </Button>
+    )
+  }
+
+  {cta.note && <p class="text-ink-subtle text-center text-xs">{cta.note}</p>}
+</Card>

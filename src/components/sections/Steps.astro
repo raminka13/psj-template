@@ -1,0 +1,68 @@
+---
+/**
+ * ============================================================================
+ *  Steps — secuencia numerada, sin tarjetas
+ * ============================================================================
+ *  Existe para romper la repetición de familias de layout. Una página que usa
+ *  la misma rejilla de tarjetas para "los programas" y para "cómo funciona"
+ *  se lee como un solo bloque largo: el ojo deja de distinguir dónde empieza
+ *  una idea y termina otra, y la página se siente más plantilla de lo que es.
+ *
+ *  Además, una secuencia NO es una rejilla. Poner pasos en tarjetas iguales
+ *  esconde justo lo que importa: que hay un orden. Aquí el orden lo llevan el
+ *  número y una línea de conexión, y no hay caja alrededor.
+ * ============================================================================
+ */
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+
+export interface Step {
+  title: string;
+  description: string;
+}
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  items: Step[];
+  background?: "default" | "muted" | "soft";
+  id?: string;
+}
+
+const { eyebrow, title, subtitle, items, background = "default", id } = Astro.props;
+---
+
+<Section id={id} background={background}>
+  <SectionHeading eyebrow={eyebrow} title={title} subtitle={subtitle} />
+
+  <ol class="mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+    {
+      items.map((item, index) => (
+        <li class="group relative flex flex-col gap-3">
+          {/*
+            Línea de conexión hacia el siguiente paso. Solo en escritorio y
+            nunca después del último: una línea que sale del último paso
+            promete un paso que no existe.
+          */}
+          {index < items.length - 1 && (
+            <span
+              class="bg-line absolute top-5 left-12 hidden h-px w-[calc(100%-2rem)] lg:block"
+              aria-hidden="true"
+            />
+          )}
+
+          <span
+            class="border-primary-muted bg-surface text-primary font-display rounded-pill relative grid size-10 place-items-center border text-base font-semibold"
+            aria-hidden="true"
+          >
+            {index + 1}
+          </span>
+
+          <h3 class="font-display text-ink text-lg font-semibold">{item.title}</h3>
+          <p class="text-ink-muted text-sm">{item.description}</p>
+        </li>
+      ))
+    }
+  </ol>
+</Section>

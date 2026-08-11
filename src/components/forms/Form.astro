@@ -1,0 +1,400 @@
+---
+/**
+ * ============================================================================
+ *  <Form /> — formulario listo para cualquier página o post
+ * ============================================================================
+ *      <Form id="optin-reto" />
+ *
+ *  Se dibuja desde el registro (src/config/forms.ts) y postea a /api/form,
+ *  que lo reenvía a GoHighLevel desde el servidor. La URL del webhook nunca
+ *  llega al navegador.
+ *
+ *  FUNCIONA SIN JAVASCRIPT. El POST nativo llega al endpoint y este responde
+ *  con un redirect a la página de gracias; la validación la hace el servidor.
+ *  El script solo mejora: valida al salir de cada campo con los mensajes en
+ *  español del registro, marca los campos correctos y evita el doble envío.
+ * ============================================================================
+ */
+import Field from "@components/forms/Field.astro";
+import FormStatus from "@components/forms/FormStatus.astro";
+import { formMessages, forms, getForm } from "@config/forms";
+
+/**
+ * Contador para que dos formularios en la misma página no compartan ids de
+ * campo. Se usa un contador y no Math.random() a propósito: un id aleatorio
+ * cambiaría en cada build y ensuciaría los diffs del HTML generado.
+ */
+let instanceCount = 0;
+
+interface Props {
+  /** id del formulario en el registro. */
+  id: string;
+  /** Título opcional sobre el formulario. */
+  title?: string;
+  /** Bajada opcional. */
+  subtitle?: string;
+  /** Etiqueta del botón, si se quiere distinta a la del registro. */
+  submitLabel?: string;
+  /** Para saber desde qué sección se convirtió (viaja en el payload). */
+  location?: string;
+  class?: string;
+}
+
+const { id, title, subtitle, submitLabel, location = "", class: className = "" } = Astro.props;
+
+const form = getForm(id);
+
+// Fallar en el build es intencional: un id mal escrito en una landing
+// significa un formulario que no captura nada, y eso no se debe descubrir en
+// producción.
+if (!form) {
+  throw new Error(
+    `<Form id="${id}" />: no existe ese formulario en src/config/forms.ts. ` +
+      `Disponibles: ${Object.keys(forms).join(", ")}`,
+  );
+}
+
+const uid = `${form.id}-${++instanceCount}`;
+const msg = formMessages(form);
+---
+
+<form
+  method="POST"
+  action="/api/form"
+  class={`not-prose flex flex-col gap-5 ${className}`}
+  data-psj-form={form.id}
+  data-success-mode={form.successMode ?? "redirect"}
+  data-msg-submitting={msg.submitting}
+  data-msg-success={msg.success}
+  data-msg-validation-error={msg.validationError}
+  data-msg-server-error={msg.serverError}
+  data-msg-network-error={msg.networkError}
+>
+  {/* Identifica el formulario en el servidor. */}
+  <input type="hidden" name="_form" value={form.id} />
+  <input type="hidden" name="_location" value={location} />
+
+  {/* Momento en que se dibujó, para la trampa de tiempo anti-bot. */}
+  <input type="hidden" name="_ts" value={Date.now().toString()} />
+
+  {
+    /*
+    Honeypot. Invisible para las personas, irresistible para los bots que
+    autocompletan todo lo que encuentran.
+    Va oculto con CSS y no con type="hidden": un bot ignora los hidden pero sí
+    llena un campo de texto normal. tabindex="-1" y aria-hidden lo sacan del
+    camino de quien navega con teclado o lector de pantalla.
+  */
+  }
+  <div class="absolute left-[-9999px] h-0 w-0 overflow-hidden" aria-hidden="true">
+    <label for={`${uid}-website`}>No llenes este campo</label>
+    <input type="text" id={`${uid}-website`} name="_website" tabindex="-1" autocomplete="off" />
+  </div>
+
+  {/* Rellenados por UtmCapture antes de enviar. */}
+  <input type="hidden" name="_utm" value="" />
+
+  {
+    (title || subtitle) && (
+      <div class="flex flex-col gap-2">
+        {title && <h2 class="font-display text-h3 text-ink font-semibold">{title}</h2>}
+        {subtitle && <p class="text-ink-muted">{subtitle}</p>}
+      </div>
+    )
+  }
+
+  {/* Estado del envío: cargando, error o éxito. */}
+  <FormStatus />
+
+  {/* Se oculta entero cuando el envío tiene éxito en modo "inline". */}
+  <div data-form-body class="flex flex-col gap-5">
+    <div class="grid grid-cols-2 gap-x-4 gap-y-5">
+      {form.fields.map((field) => <Field field={field} idPrefix={uid} />)}
+    </div>
+
+    <button
+      type="submit"
+      class="ease-out-soft rounded-btn bg-primary text-on-primary shadow-brand hover:bg-primary-hover inline-flex h-12 w-full items-center justify-center gap-2 px-6 font-semibold transition-colors duration-[120ms] disabled:cursor-not-allowed disabled:opacity-60"
+    >
+      {
+        /*
+        La etiqueta cambia a "Enviando…" durante el envío, en vez de girar un
+        spinner al lado. El texto dice qué está pasando; una rueda solo dice
+        "algo está pasando".
+      */
+      }
+      <span data-submit-label>{submitLabel ?? form.submitLabel}</span>
+    </button>
+
+    {
+      form.consentText && (
+        <p
+          class="text-ink-subtle text-center text-xs [&_a]:underline [&_a]:underline-offset-2"
+          set:html={form.consentText}
+        />
+      )
+    }
+  </div>
+</form>
+
+<script>
+  // ══ Mejora progresiva ══════════════════════════════════════════════════
+  // Sin este script el formulario ya funciona: el navegador hace el POST y el
+  // servidor valida y redirige. Esto añade validación inmediata con los
+  // mensajes en español del registro y feedback de éxito.
+
+  type Control = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+
+  /** Devuelve el mensaje de error de un campo, o null si está bien. */
+  function validateField(el: Control): string | null {
+    const required = el.hasAttribute("required");
+    const msgRequired = el.dataset.msgRequired || "Este campo es obligatorio.";
+    const msgInvalid = el.dataset.msgInvalid || "Revisa lo que escribiste.";
+
+    // Checkbox: el único estado que importa es si está marcado.
+    if (el instanceof HTMLInputElement && el.type === "checkbox") {
+      return required && !el.checked ? msgRequired : null;
+    }
+
+    const value = el.value.trim();
+
+    // Vacío y obligatorio: es un problema distinto a "mal escrito", y el
+    // mensaje tiene que decir cuál de los dos es.
+    if (!value) return required ? msgRequired : null;
+
+    // typeMismatch lo calcula el navegador (type="email"), así que no hay que
+    // reimplementar una expresión regular de correos, que siempre sale mal.
+    if ("validity" in el && el.validity.typeMismatch) return msgInvalid;
+
+    if (el instanceof HTMLInputElement && el.type === "tel") {
+      const digits = value.replace(/\D/g, "");
+      const min = Number(el.dataset.minLength || 8);
+      const max = Number(el.dataset.maxLength || 15);
+      if (digits.length < min || digits.length > max) return msgInvalid;
+      return null;
+    }
+
+    const min = Number(el.dataset.minLength || 0);
+    if (min && value.length < min) return msgInvalid;
+
+    return null;
+  }
+
+  /** Pinta el resultado de la validación bajo el campo. */
+  function paintField(el: Control, error: string | null, showSuccess: boolean) {
+    const wrapper = el.closest("[data-field]");
+    if (!wrapper) return;
+
+    const errorEl = wrapper.querySelector<HTMLElement>("[data-field-error]");
+    const successEl = wrapper.querySelector<HTMLElement>("[data-field-success]");
+    const hintEl = wrapper.querySelector<HTMLElement>("[data-field-hint]");
+    const check = wrapper.querySelector<HTMLElement>("[data-field-check]");
+
+    const hasValue =
+      el instanceof HTMLInputElement && el.type === "checkbox"
+        ? el.checked
+        : Boolean(el.value.trim());
+
+    if (error) {
+      el.dataset.state = "error";
+      el.setAttribute("aria-invalid", "true");
+      if (errorEl) {
+        errorEl.textContent = error;
+        errorEl.hidden = false;
+      }
+      if (successEl) successEl.hidden = true;
+      if (check) check.hidden = true;
+      // La pista se calla mientras haya error: dos textos bajo el mismo campo
+      // compiten y el importante es el que dice qué corregir.
+      if (hintEl) hintEl.hidden = true;
+      return;
+    }
+
+    el.removeAttribute("aria-invalid");
+    if (errorEl) {
+      errorEl.textContent = "";
+      errorEl.hidden = true;
+    }
+
+    // Éxito solo si la persona ya interactuó y escribió algo. Marcar en verde
+    // un campo opcional vacío sería mentir.
+    if (showSuccess && hasValue) {
+      el.dataset.state = "success";
+      if (check) check.hidden = false;
+      // El mensaje de éxito solo aparece si el campo declaró uno.
+      if (successEl && successEl.textContent?.trim()) {
+        successEl.hidden = false;
+        if (hintEl) hintEl.hidden = true;
+      } else if (hintEl) {
+        hintEl.hidden = false;
+      }
+    } else {
+      delete el.dataset.state;
+      if (check) check.hidden = true;
+      if (successEl) successEl.hidden = true;
+      if (hintEl) hintEl.hidden = false;
+    }
+  }
+
+  /** Limpia el estado visual de todos los campos. */
+  function resetFields(form: HTMLFormElement) {
+    form.querySelectorAll<Control>("[data-msg-required]").forEach((el) => {
+      paintField(el, null, false);
+    });
+  }
+
+  /** Muestra el estado global del envío. */
+  function setStatus(
+    form: HTMLFormElement,
+    variant: "error" | "success" | "loading" | null,
+    text = "",
+  ) {
+    const box = form.querySelector<HTMLElement>("[data-status-box]");
+    const message = form.querySelector<HTMLElement>("[data-status-message]");
+    if (!box || !message) return;
+
+    if (!variant) {
+      box.hidden = true;
+      return;
+    }
+
+    box.dataset.variant = variant;
+    message.textContent = text;
+    box.hidden = false;
+  }
+
+  function setupForms() {
+    document.querySelectorAll<HTMLFormElement>("form[data-psj-form]").forEach((form) => {
+      if (form.dataset.enhanced === "true") return;
+      form.dataset.enhanced = "true";
+
+      // Se apagan las burbujas nativas SOLO ahora, con el JS ya corriendo.
+      // Si `novalidate` estuviera en el HTML, quien no tenga JavaScript
+      // perdería también la validación del navegador.
+      form.noValidate = true;
+
+      const controls = [...form.querySelectorAll<Control>("[data-msg-required]")];
+
+      controls.forEach((el) => {
+        // Al salir del campo: se valida y se marca. Validar mientras escribe
+        // por primera vez es hostil — regaña por un correo a medio teclear.
+        el.addEventListener("blur", () => {
+          el.dataset.touched = "true";
+          paintField(el, validateField(el), true);
+        });
+
+        // Ya marcado en rojo, se revalida al escribir para que el error
+        // desaparezca en cuanto se corrige y no al volver a enviar.
+        el.addEventListener("input", () => {
+          if (el.dataset.state === "error") paintField(el, validateField(el), false);
+        });
+
+        // Los select y checkbox se evalúan al cambiar, no al salir.
+        if (
+          el instanceof HTMLSelectElement ||
+          (el instanceof HTMLInputElement && el.type === "checkbox")
+        ) {
+          el.addEventListener("change", () => {
+            el.dataset.touched = "true";
+            paintField(el, validateField(el), true);
+          });
+        }
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        // 1. Validar todo antes de molestar al servidor.
+        let firstInvalid: Control | null = null;
+        controls.forEach((el) => {
+          const error = validateField(el);
+          paintField(el, error, true);
+          if (error && !firstInvalid) firstInvalid = el;
+        });
+
+        if (firstInvalid) {
+          setStatus(form, "error", form.dataset.msgValidationError || "");
+          (firstInvalid as Control).focus();
+          return;
+        }
+
+        // 2. Enviar.
+        const button = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+        const label = form.querySelector<HTMLElement>("[data-submit-label]");
+        const idleLabel = label?.textContent ?? "";
+        const submittingText = form.dataset.msgSubmitting || "Enviando…";
+
+        // Bloquear el botón evita el doble envío, que en un CRM se traduce en
+        // contactos duplicados. La etiqueta pasa a "Enviando…" para que el
+        // estado se lea en el propio botón, donde está mirando la persona.
+        if (button) button.disabled = true;
+        if (label) label.textContent = submittingText;
+        setStatus(form, "loading", submittingText);
+
+        try {
+          const response = await fetch(form.action, {
+            method: "POST",
+            body: new FormData(form),
+            headers: { Accept: "application/json" },
+          });
+
+          const result = await response.json();
+
+          if (result.ok) {
+            setStatus(form, "success", result.message || form.dataset.msgSuccess || "");
+
+            if (form.dataset.successMode === "inline") {
+              // Se esconde el formulario y queda solo el mensaje de éxito.
+              form.querySelector<HTMLElement>("[data-form-body]")?.setAttribute("hidden", "");
+              return;
+            }
+
+            // Redirección: el mensaje alcanza a verse antes del salto, así que
+            // el éxito se percibe aunque la nueva página tarde en cargar.
+            if (result.redirect) window.location.assign(result.redirect);
+            return;
+          }
+
+          // 3. Errores por campo devueltos por el servidor.
+          if (result.errors) {
+            let first: Control | null = null;
+            for (const [name, message] of Object.entries(result.errors)) {
+              const el = form.querySelector<Control>(`[name="${name}"]`);
+              if (!el) continue;
+              paintField(el, String(message), false);
+              if (!first) first = el;
+            }
+            (first as Control | null)?.focus();
+          }
+
+          setStatus(
+            form,
+            "error",
+            result.message ||
+              (response.status >= 500
+                ? form.dataset.msgServerError || ""
+                : form.dataset.msgValidationError || ""),
+          );
+        } catch {
+          // Solo llega aquí si la petición ni siquiera salió: sin conexión o
+          // servidor caído. El mensaje lo dice y aclara que no se perdió nada.
+          setStatus(form, "error", form.dataset.msgNetworkError || "");
+        } finally {
+          // Se restaura la etiqueta original para que un reintento no diga
+          // "Enviando…" en un botón que está parado.
+          if (button) button.disabled = false;
+          if (label) label.textContent = idleLabel;
+        }
+      });
+
+      // Un reset devuelve todo al estado limpio, incluidos los mensajes.
+      form.addEventListener("reset", () => {
+        resetFields(form);
+        setStatus(form, null);
+      });
+    });
+  }
+
+  // Solo por evento: astro:page-load también dispara en la carga inicial.
+  document.addEventListener("astro:page-load", setupForms);
+</script>

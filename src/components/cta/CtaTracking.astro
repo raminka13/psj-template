@@ -1,0 +1,55 @@
+---
+/**
+ * ============================================================================
+ *  Tracking de clics en CTAs
+ * ============================================================================
+ *  Un solo listener delegado en el documento capta los clics de CUALQUIER
+ *  elemento con `data-cta`. Agregar un CTA nuevo no requiere tocar analytics,
+ *  y medir uno existente no requiere tocar la página que lo usa.
+ *
+ *  Empuja el evento a `dataLayer` (GTM) y a `gtag` si existen. Si no hay
+ *  ninguno de los dos, no hace nada: el sitio no depende de esto para
+ *  funcionar.
+ *
+ *  Se monta una vez, en BaseLayout.
+ * ============================================================================
+ */
+---
+
+<script is:inline>
+  (function () {
+    document.addEventListener(
+      "click",
+      function (event) {
+        var target = event.target;
+        if (!target || !target.closest) return;
+
+        var el = target.closest("[data-cta]");
+        if (!el) return;
+
+        var payload = {
+          event: "cta_click",
+          cta_id: el.getAttribute("data-cta") || "",
+          cta_location: el.getAttribute("data-cta-location") || "",
+          cta_text: (el.textContent || "").trim().slice(0, 100),
+          cta_href: el.getAttribute("href") || "",
+          page_path: window.location.pathname,
+        };
+
+        try {
+          if (window.dataLayer && typeof window.dataLayer.push === "function") {
+            window.dataLayer.push(payload);
+          }
+          if (typeof window.gtag === "function") {
+            window.gtag("event", "cta_click", payload);
+          }
+        } catch (e) {
+          // Que falle analytics nunca debe impedir que el enlace navegue.
+        }
+      },
+      // Fase de captura: garantiza que el evento se registre aunque algo más
+      // detenga la propagación del clic más abajo.
+      true,
+    );
+  })();
+</script>

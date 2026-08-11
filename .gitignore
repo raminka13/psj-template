@@ -1,0 +1,37 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment variables
+.env
+.env.production
+.env.local
+
+# macOS
+.DS_Store
+
+# editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# NOTA: .claude/ y .agents/ SÍ se versionan a propósito.
+# Los skills de diseño y CLAUDE.md son parte del template y deben viajar con
+# cada copia que se saque de este repo.
+#
+# Los skills viven en .agents/skills/ y .claude/skills/ son symlinks hacia
+# allá. Git guarda symlinks sin problema, pero en Windows hay que tener
+# activado el modo desarrollador (o `git config core.symlinks true`) para que
+# se restauren como enlaces y no como archivos de texto.
+
+# Local Netlify folder
+.netlify

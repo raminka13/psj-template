@@ -1,0 +1,33 @@
+---
+/**
+ * Centra el contenido y le da el ancho máximo y los márgenes laterales del
+ * sitio. Todo lo que se ve dentro de una sección va envuelto en esto.
+ *
+ * El ancho sale de --container-page y el margen lateral de --container-gutter,
+ * los dos en tokens.css.
+ */
+import type { HTMLTag } from "astro/types";
+
+interface Props {
+  /** `narrow` para texto largo, `wide` para galerías a todo lo ancho. */
+  width?: "default" | "narrow" | "wide";
+  as?: HTMLTag;
+  class?: string;
+}
+
+// La anotación `: Props` es necesaria, no decorativa: cuando un componente
+// renderiza una etiqueta dinámica (<Tag>), Astro deja de inferir el tipo de
+// Astro.props solo y todo se vuelve `any` en silencio. Igual en el resto de
+// componentes con prop `as`.
+const { width = "default", as: Tag = "div", class: className = "" }: Props = Astro.props;
+
+const widths = {
+  default: "max-w-page",
+  narrow: "max-w-3xl",
+  wide: "max-w-[95rem]",
+};
+---
+
+<Tag class={`mx-auto w-full px-[var(--container-gutter)] ${widths[width]} ${className}`}>
+  <slot />
+</Tag>

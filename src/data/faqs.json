@@ -1,0 +1,44 @@
+[
+  {
+    "id": "que-incluye",
+    "order": 1,
+    "group": "general",
+    "q": "¿Qué incluye exactamente el reto?",
+    "a": "Cada reto incluye las lecciones diarias, el cuaderno de trabajo descargable, el acceso al grupo de acompañamiento y las sesiones en vivo de preguntas. Todo queda grabado, así que puedes verlo cuando te acomode."
+  },
+  {
+    "id": "cuanto-tiempo",
+    "order": 2,
+    "group": "general",
+    "q": "¿Cuánto tiempo al día necesito?",
+    "a": "Entre 15 y 20 minutos. Está pensado para que quepa en una mañana ocupada: si un día no alcanzas, el contenido no se vence y lo retomas al siguiente."
+  },
+  {
+    "id": "para-quien",
+    "order": 3,
+    "group": "general",
+    "q": "¿Esto es para mí si apenas estoy empezando?",
+    "a": "Sí. No hace falta ningún conocimiento previo ni haber tomado otro programa. Empezamos desde lo básico y avanzamos juntos."
+  },
+  {
+    "id": "acceso",
+    "order": 4,
+    "group": "acceso",
+    "q": "¿Por cuánto tiempo tengo acceso?",
+    "a": "El acceso es de por vida. Puedes repetir el reto las veces que quieras y siempre vas a tener las actualizaciones que hagamos más adelante, sin costo extra."
+  },
+  {
+    "id": "formas-de-pago",
+    "order": 5,
+    "group": "pagos",
+    "q": "¿Qué formas de pago aceptan?",
+    "a": "Tarjeta de crédito y débito, PayPal y transferencia. Si estás fuera de México y tu tarjeta no pasa, escríbenos y te mandamos un enlace alterno."
+  },
+  {
+    "id": "garantia",
+    "order": 6,
+    "group": "pagos",
+    "q": "¿Hay garantía?",
+    "a": "Sí. Tienes 14 días para pedir tu reembolso completo, sin explicaciones y sin trámites. Nos escribes, te devolvemos el dinero."
+  }
+]

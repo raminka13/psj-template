@@ -1,0 +1,53 @@
+---
+/**
+ * Tarjeta. El radio sale de --radius-card y la sombra de --shadow-card.
+ *
+ * Si `href` está presente, el enlace envuelve la tarjeta entera para que el
+ * área clicable sea toda ella y no solo el título — en móvil eso es la
+ * diferencia entre un objetivo cómodo y uno que se falla a cada rato.
+ */
+import type { HTMLTag } from "astro/types";
+
+interface Props {
+  variant?: "default" | "outline" | "soft" | "elevated";
+  href?: string;
+  /** Levanta la tarjeta al pasar el mouse. Por defecto, solo si es clicable. */
+  interactive?: boolean;
+  as?: HTMLTag;
+  class?: string;
+}
+
+// Ver la nota sobre `: Props` en Container.astro.
+const {
+  variant = "default",
+  href,
+  interactive = Boolean(href),
+  as: Tag = "div",
+  class: className = "",
+}: Props = Astro.props;
+
+const variants = {
+  default: "bg-surface-raised border border-line shadow-sm",
+  outline: "bg-transparent border border-line",
+  soft: "bg-surface-muted border border-transparent",
+  elevated: "bg-surface-raised border border-line shadow-card",
+};
+
+const classes = [
+  // 150ms y no 300: el hover de una tarjeta se dispara decenas de veces por
+  // sesión, y a esa frecuencia una animación larga deja de leerse como pulida
+  // y empieza a leerse como lenta. Lo que se ve mucho, se acorta.
+  "rounded-card p-6 transition-[transform,box-shadow,border-color] duration-150 ease-out-soft",
+  variants[variant],
+  interactive ? "hover:-translate-y-1 hover:border-primary-muted hover:shadow-lg" : "",
+  className,
+]
+  .filter(Boolean)
+  .join(" ");
+
+const Component = href ? "a" : Tag;
+---
+
+<Component class={classes} href={href}>
+  <slot />
+</Component>

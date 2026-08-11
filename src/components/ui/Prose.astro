@@ -1,0 +1,156 @@
+---
+/**
+ * Envoltorio para contenido largo generado desde Markdown (posts del blog,
+ * páginas legales).
+ *
+ * Se escribe a mano en vez de usar @tailwindcss/typography porque ese plugin
+ * trae su propia paleta de grises y sus propios tamaños, que habría que
+ * sobrescribir token por token para que respete la marca. Sale más corto
+ * definirlo aquí, y así el contenido del blog cambia de color junto con el
+ * resto de la página.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<div class={`prose measure ${className}`}>
+  <slot />
+</div>
+
+<style>
+  /* is:global porque el HTML lo genera Markdown en tiempo de build y no lleva
+   * los atributos de scope que Astro añade a los componentes. */
+  .prose :global(> * + *) {
+    margin-top: 1.25em;
+  }
+
+  .prose :global(h2) {
+    margin-top: 2.5em;
+    margin-bottom: 0.75em;
+    font-size: var(--text-h2);
+    font-weight: 700;
+  }
+
+  .prose :global(h3) {
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+    font-size: var(--text-h3);
+    font-weight: 600;
+  }
+
+  .prose :global(p) {
+    color: var(--ink-muted);
+  }
+
+  .prose :global(a) {
+    color: var(--brand-primary);
+    text-decoration: underline;
+    /* Separa el subrayado de las letras con descendente (g, p, y) para que
+     * no las corte por la mitad. */
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+    transition: color 150ms var(--ease-out-soft);
+  }
+
+  .prose :global(a:hover) {
+    color: var(--brand-primary-hover);
+  }
+
+  .prose :global(strong) {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .prose :global(ul),
+  .prose :global(ol) {
+    padding-left: 1.5em;
+    color: var(--ink-muted);
+  }
+
+  .prose :global(ul) {
+    list-style-type: disc;
+  }
+
+  .prose :global(ol) {
+    list-style-type: decimal;
+  }
+
+  .prose :global(li + li) {
+    margin-top: 0.5em;
+  }
+
+  .prose :global(li::marker) {
+    color: var(--brand-primary);
+  }
+
+  /* Sin barra de color a la izquierda. Ese borde grueso de acento es el
+   * recurso más reconocible de la interfaz generada por máquina, hasta el
+   * punto de que el detector de Impeccable lo marca por sí solo.
+   *
+   * Una cita ya se distingue por lo que es: más grande, con más aire y en la
+   * tipografía de titulares. No necesita que se le pinte una etiqueta al lado
+   * para avisar de que es una cita. */
+  .prose :global(blockquote) {
+    margin-block: 2em;
+    padding-left: 0;
+    border: 0;
+    font-family: var(--font-heading);
+    font-size: 1.25em;
+    line-height: 1.45;
+    color: var(--ink);
+  }
+
+  .prose :global(blockquote p) {
+    color: var(--ink);
+  }
+
+  .prose :global(img) {
+    border-radius: var(--radius-image);
+  }
+
+  .prose :global(code) {
+    background-color: var(--surface-muted);
+    border-radius: 0.375em;
+    padding: 0.15em 0.4em;
+    font-size: 0.9em;
+  }
+
+  .prose :global(pre) {
+    background-color: var(--surface-inverse);
+    color: var(--ink-inverse);
+    border-radius: var(--radius-card);
+    padding: 1.25em;
+    overflow-x: auto;
+  }
+
+  .prose :global(pre code) {
+    background-color: transparent;
+    padding: 0;
+  }
+
+  .prose :global(hr) {
+    margin-block: 2.5em;
+    border-color: var(--line);
+  }
+
+  .prose :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95em;
+  }
+
+  .prose :global(th),
+  .prose :global(td) {
+    border-bottom: 1px solid var(--line);
+    padding: 0.6em 0.75em;
+    text-align: left;
+  }
+
+  .prose :global(th) {
+    font-weight: 600;
+    color: var(--ink);
+  }
+</style>

@@ -1,0 +1,89 @@
+---
+/**
+ * Índice de retos.
+ *
+ * Además de ser una página en sí, es el destino del enlace "Retos" del menú:
+ * en pantallas táctiles no hay hover, así que tocar el padre tiene que llevar
+ * a algún sitio real. Esta es esa página.
+ */
+import CtaBanner from "@components/cta/CtaBanner.astro";
+import Card from "@components/ui/Card.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import PageLayout from "@layouts/PageLayout.astro";
+import { getRetos } from "@lib/content";
+import { Icon } from "astro-icon/components";
+
+const retos = await getRetos();
+---
+
+<PageLayout
+  pageType="CollectionPage"
+  seo={{
+    title: "Retos y programas",
+    description:
+      "Los programas de Para Siempre Juntos: retos cortos para construir el hábito, acompañamiento continuo y formación para emprender con propósito.",
+    keywords: ["retos de fe", "programas cristianos en español", "cursos de sabiduría"],
+    breadcrumbs: [{ name: "Retos", href: "/retos" }],
+  }}
+>
+  <Section spacing="sm">
+    <SectionHeading
+      title="Elige por dónde empezar"
+      subtitle="Tres caminos distintos. No hay orden obligatorio, aunque la mayoría empieza por el primero."
+      as="h1"
+      size="h1"
+    />
+  </Section>
+
+  <Section spacing="sm">
+    {
+      /*
+      Una tarjeta por reto, cada una enlazando a su página. Alternan tinte
+      para que la rejilla tenga ritmo y no se lea como un bloque plano.
+    */
+    }
+    <div class="grid gap-6 lg:grid-cols-3">
+      {
+        retos.map((reto, index) => {
+          const tinted = index % 2 === 0;
+          return (
+            <Card
+              variant={tinted ? "soft" : "outline"}
+              href={`/retos/${reto.id}`}
+              class={`flex flex-col gap-4 ${tinted ? "bg-primary-soft border-primary-muted" : ""}`}
+            >
+              <div
+                class={`rounded-btn grid size-11 place-items-center ${
+                  tinted ? "bg-surface text-primary" : "bg-primary-soft text-primary"
+                }`}
+                aria-hidden="true"
+              >
+                <Icon name={`lucide:${reto.data.icon}`} class="size-5" />
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <h2 class="font-display text-h3 text-ink font-semibold">{reto.data.title}</h2>
+                <p class="text-ink-muted">{reto.data.description}</p>
+              </div>
+
+              {/* Datos de un vistazo, para poder comparar sin abrir cada página. */}
+              <dl class="border-line mt-auto flex flex-col gap-1 border-t pt-4 text-sm">
+                <div class="flex justify-between gap-3">
+                  <dt class="text-ink-subtle">Duración</dt>
+                  <dd class="text-ink font-medium">{reto.data.duration}</dd>
+                </div>
+                <div class="flex justify-between gap-3">
+                  <dt class="text-ink-subtle">Dedicación</dt>
+                  <dd class="text-ink font-medium">{reto.data.commitment}</dd>
+                </div>
+              </dl>
+            </Card>
+          );
+        })
+      }
+    </div>
+  </Section>
+
+  <CtaBanner id="empezar-reto" anchorId="cta-final" location="retos-indice" />
+</PageLayout>

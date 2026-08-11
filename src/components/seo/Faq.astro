@@ -1,0 +1,88 @@
+---
+/**
+ * ============================================================================
+ *  <Faq /> — acordeón de preguntas frecuentes
+ * ============================================================================
+ *  Construido sobre <details>/<summary> nativos: funciona sin JavaScript, es
+ *  accesible por teclado de fábrica y los lectores de pantalla ya saben
+ *  anunciarlo como plegable. Un acordeón hecho con divs y onclick requiere
+ *  replicar todo eso a mano y casi siempre queda incompleto.
+ *
+ *  IMPORTANTE — una sola fuente de datos:
+ *  El mismo array que le pasas aquí debe ir en `seo.faqs` del layout. Así el
+ *  texto visible y el FAQPage del JSON-LD no se pueden desincronizar, que es
+ *  justo lo que Google penaliza (schema que no coincide con lo que se ve).
+ *
+ *      const faqs = [{ q: "…", a: "…" }];
+ *      <PageLayout seo={{ title: "…", faqs }}>
+ *        <Faq items={faqs} />
+ *      </PageLayout>
+ * ============================================================================
+ */
+import type { FaqItem } from "@lib/seo";
+
+interface Props {
+  items: FaqItem[];
+  /** Abre la primera pregunta al cargar. Útil cuando hay una duda dominante. */
+  openFirst?: boolean;
+  class?: string;
+}
+
+const { items, openFirst = false, class: className = "" } = Astro.props;
+---
+
+<div class={`divide-y divide-line border-y border-line ${className}`}>
+  {
+    items.map((item, index) => (
+      <details name="faq" open={openFirst && index === 0} class="group">
+        <summary class="font-display text-ink hover:text-primary flex cursor-pointer list-none items-center justify-between gap-4 py-5 text-left text-lg font-semibold transition-colors duration-200">
+          <span>{item.q}</span>
+          {/* aria-hidden: el icono es decorativo, <details> ya anuncia el estado */}
+          <svg
+            class="text-ink-subtle ease-out-soft size-5 shrink-0 transition-transform duration-200 group-open:rotate-45"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+        </summary>
+        <div class="measure text-ink-muted pb-5" set:html={item.a} />
+      </details>
+    ))
+  }
+</div>
+
+<style>
+  /* `name="faq"` hace que solo una pregunta esté abierta a la vez (acordeón
+   * exclusivo nativo). En navegadores que no lo soportan, el peor caso es que
+   * se puedan abrir varias — degradación aceptable, sin JS de por medio. */
+
+  /* La animación de apertura solo se aplica donde `interpolate-size` existe;
+   * sin él, `height: auto` no es animable y el bloque simplemente aparece. */
+  @supports (interpolate-size: allow-keywords) {
+    :root {
+      interpolate-size: allow-keywords;
+    }
+
+    details::details-content {
+      block-size: 0;
+      overflow: hidden;
+      opacity: 0;
+      /* 200ms: un acordeón está en el rango de un desplegable (150-250ms).
+       * A 300ms se percibe como espera, no como transición. */
+      transition:
+        block-size 200ms var(--ease-out-soft),
+        opacity 150ms var(--ease-out-soft),
+        content-visibility 200ms allow-discrete;
+    }
+
+    details[open]::details-content {
+      block-size: auto;
+      opacity: 1;
+    }
+  }
+</style>

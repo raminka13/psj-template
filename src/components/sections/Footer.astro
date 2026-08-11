@@ -1,0 +1,90 @@
+---
+import Container from "@components/ui/Container.astro";
+import { footerNav, type FooterColumn } from "@config/navigation";
+import { site } from "@config/site";
+import { getRetos } from "@lib/content";
+
+const year = new Date().getFullYear();
+
+/**
+ * La columna de programas se genera desde la colección, no se escribe a mano.
+ * Un reto nuevo aparece aquí y en el menú a la vez; si estuviera duplicado en
+ * navigation.ts, tarde o temprano el footer quedaría desfasado.
+ * Se inserta en segunda posición, entre "Contenido" y "Legal".
+ */
+const retos = await getRetos();
+const programas: FooterColumn = {
+  title: "Programas",
+  links: retos.map((reto) => ({ label: reto.data.title, href: `/retos/${reto.id}` })),
+};
+
+const columnas: FooterColumn[] = [footerNav[0], programas, ...footerNav.slice(1)].filter(Boolean);
+---
+
+<footer class="border-line bg-surface-muted border-t">
+  <Container class="py-section-sm">
+    <div class="grid gap-10 md:grid-cols-[1.5fr_repeat(3,1fr)]">
+      {/* Marca */}
+      <div class="flex flex-col gap-3">
+        <a href="/" class="font-display text-ink flex w-fit items-center gap-2 text-lg font-bold">
+          <span
+            class="rounded-btn bg-primary text-on-primary grid size-9 place-items-center font-bold"
+            aria-hidden="true">P</span
+          >
+          <span>{site.name}</span>
+        </a>
+        <p class="text-ink-muted max-w-xs text-sm">{site.defaultDescription}</p>
+      </div>
+
+      {/* Columnas de enlaces */}
+      {
+        columnas.map((column) => (
+          <nav aria-label={column.title} class="flex flex-col gap-3">
+            <h2 class="font-display text-ink text-sm font-semibold tracking-wide uppercase">
+              {column.title}
+            </h2>
+            <ul class="flex flex-col gap-2">
+              {column.links.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    class="text-ink-muted hover:text-primary text-sm transition-colors duration-200"
+                    {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
+    </div>
+
+    <div
+      class="border-line mt-10 flex flex-col items-center justify-between gap-4 border-t pt-6 sm:flex-row"
+    >
+      <p class="text-ink-subtle text-sm">
+        © {year}
+        {site.organization.legalName}. Todos los derechos reservados.
+      </p>
+
+      <ul class="flex items-center gap-4">
+        {
+          site.organization.sameAs.map((url) => (
+            <li>
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-ink-subtle hover:text-primary text-sm transition-colors duration-200"
+              >
+                {new URL(url).hostname.replace("www.", "").split(".")[0]}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </Container>
+</footer>

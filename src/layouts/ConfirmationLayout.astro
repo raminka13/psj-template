@@ -1,0 +1,125 @@
+---
+/**
+ * ============================================================================
+ *  ConfirmationLayout — la página que se ve tras enviar un formulario
+ * ============================================================================
+ *  Tres decisiones deliberadas:
+ *
+ *  1. `noindex` forzado. Una página de gracias indexada hace que la gente
+ *     llegue por Google sin haberse registrado, y ensucia la medición de
+ *     conversiones con visitas que nunca convirtieron.
+ *
+ *  2. Sin menú de navegación. Es el momento de mayor atención de toda la
+ *     sesión: cada enlace de más es una salida. Solo queda el logo y el
+ *     siguiente paso.
+ *
+ *  3. Bloque de "qué pasa ahora". La duda tras registrarse ("¿me llegó?",
+ *     "¿y ahora qué?") es lo que hace que la gente abandone antes de abrir el
+ *     primer correo. Decirlo por adelantado lo evita.
+ * ============================================================================
+ */
+import Container from "@components/ui/Container.astro";
+import { site } from "@config/site";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import type { SeoProps } from "@lib/seo";
+
+interface Props {
+  title: string;
+  message: string;
+  /** Pasos de "qué pasa ahora". */
+  steps?: string[];
+  /** Título del bloque de pasos. */
+  stepsTitle?: string;
+  seo?: SeoProps;
+}
+
+const { title, message, steps = [], stepsTitle = "Qué pasa ahora", seo = {} } = Astro.props;
+---
+
+<BaseLayout
+  seo={{
+    ...seo,
+    title: seo.title ?? title,
+    description: seo.description ?? message,
+    // Se fuerza aquí y no se deja a la configuración: aunque alguien mueva
+    // estas páginas fuera de /gracias, siguen sin indexarse.
+    noindex: true,
+  }}
+>
+  <header class="border-line border-b">
+    <Container class="h-header flex items-center">
+      <a href="/" class="font-display text-ink flex items-center gap-2 text-lg font-bold">
+        <span
+          class="rounded-btn bg-primary text-on-primary grid size-9 place-items-center font-bold"
+          aria-hidden="true">P</span
+        >
+        <span>{site.shortName}</span>
+      </a>
+    </Container>
+  </header>
+
+  <main id="main">
+    <Container width="narrow" class="py-section">
+      <div class="flex flex-col items-center gap-6 text-center">
+        {/* Palomita. Decorativa: el mensaje ya lo dice el <h1>. */}
+        <div
+          class="rounded-pill bg-success-soft text-success grid size-16 place-items-center"
+          aria-hidden="true"
+        >
+          <svg
+            class="size-8"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M20 6 9 17l-5-5"></path>
+          </svg>
+        </div>
+
+        <h1 class="font-display text-h1 text-ink font-bold">{title}</h1>
+        <p class="measure text-lead text-ink-muted" set:html={message} />
+      </div>
+
+      {
+        steps.length > 0 && (
+          <div class="rounded-card border-line bg-surface-muted mt-12 border p-6 sm:p-8">
+            <h2 class="font-display text-ink mb-5 text-lg font-semibold">{stepsTitle}</h2>
+            <ol class="flex flex-col gap-4">
+              {steps.map((step, index) => (
+                <li class="flex items-start gap-3">
+                  <span
+                    class="font-display rounded-pill bg-primary text-on-primary grid size-7 shrink-0 place-items-center text-sm font-bold"
+                    aria-hidden="true"
+                  >
+                    {index + 1}
+                  </span>
+                  <span class="text-ink-muted" set:html={step} />
+                </li>
+              ))}
+            </ol>
+          </div>
+        )
+      }
+
+      {/* Siguiente paso del funnel. */}
+      <div class="mt-12 flex flex-col items-center gap-4">
+        <slot />
+      </div>
+    </Container>
+  </main>
+
+  <footer class="border-line border-t py-8">
+    <Container class="text-ink-subtle text-center text-sm">
+      <p>
+        ¿Algún problema? Escríbenos a
+        <a
+          href={`mailto:${site.organization.email}`}
+          class="text-primary underline underline-offset-4">{site.organization.email}</a
+        >
+      </p>
+    </Container>
+  </footer>
+</BaseLayout>

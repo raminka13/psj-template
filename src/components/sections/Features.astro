@@ -1,0 +1,76 @@
+---
+/**
+ * Rejilla de características o programas.
+ *
+ * Las celdas alternan fondo a propósito. Una rejilla de tarjetas blancas
+ * idénticas sobre fondo blanco, cada una con su iconito, es el bloque más
+ * repetido de la web generada: no aporta jerarquía, no dirige la mirada y
+ * hace que seis cosas distintas parezcan la misma. Alternando el tinte, el
+ * ojo agarra el ritmo de la rejilla y las tarjetas dejan de fundirse.
+ */
+import Card from "@components/ui/Card.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import { Icon } from "astro-icon/components";
+
+export interface Feature {
+  /** Nombre de icono de Lucide SIN prefijo, ej. "book-open". Ver lucide.dev/icons */
+  icon?: string;
+  title: string;
+  description: string;
+  href?: string;
+}
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  items: Feature[];
+  columns?: 2 | 3 | 4;
+  background?: "default" | "muted" | "soft";
+  id?: string;
+}
+
+const { eyebrow, title, subtitle, items, columns = 3, background = "default", id } = Astro.props;
+
+const gridCols = {
+  2: "sm:grid-cols-2",
+  3: "sm:grid-cols-2 lg:grid-cols-3",
+  4: "sm:grid-cols-2 lg:grid-cols-4",
+};
+---
+
+<Section id={id} background={background}>
+  <SectionHeading eyebrow={eyebrow} title={title} subtitle={subtitle} />
+
+  <div class={`mt-14 grid gap-6 ${gridCols[columns]}`}>
+    {
+      items.map((item, index) => {
+        // Índices pares tintados: con 3 o 4 elementos deja siempre al menos
+        // dos celdas con variación real, que es lo que evita el bloque plano.
+        const tinted = index % 2 === 0;
+
+        return (
+          <Card
+            variant={tinted ? "soft" : "outline"}
+            href={item.href}
+            class={`flex flex-col gap-3 ${tinted ? "bg-primary-soft border-primary-muted" : ""}`}
+          >
+            {item.icon && (
+              <div
+                class={`rounded-btn grid size-11 place-items-center ${
+                  tinted ? "bg-surface text-primary" : "bg-primary-soft text-primary"
+                }`}
+                aria-hidden="true"
+              >
+                <Icon name={`lucide:${item.icon}`} class="size-5" />
+              </div>
+            )}
+            <h3 class="font-display text-h3 text-ink font-semibold">{item.title}</h3>
+            <p class="text-ink-muted">{item.description}</p>
+          </Card>
+        );
+      })
+    }
+  </div>
+</Section>

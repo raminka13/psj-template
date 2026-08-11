@@ -1,0 +1,171 @@
+---
+/**
+ * ============================================================================
+ *  Hero — asimétrico, alineado a la izquierda
+ * ============================================================================
+ *  Tres reglas duras que este componente hace cumplir por construcción:
+ *
+ *  1. MÁXIMO 4 ELEMENTOS DE TEXTO: etiqueta, titular, bajada y botones. No
+ *     acepta línea de confianza, ni tira de logos, ni teaser de precio. Todo
+ *     eso va en secciones propias debajo. El hero es un momento, no un
+ *     resumen de la página.
+ *
+ *  2. NO CENTRADO. El hero centrado es la silueta por defecto de toda landing
+ *     generada, y se reconoce al instante. Con el texto a la izquierda y aire
+ *     deliberado a la derecha, la página arranca con una composición que
+ *     alguien decidió.
+ *
+ *  3. CABE EN LA PRIMERA PANTALLA. El padding superior está topado y la bajada
+ *     limitada, para que el botón principal nunca quede bajo el pliegue.
+ *
+ *  Para enfatizar una palabra del titular usa <em>, no otro color ni otra
+ *  fuente: la itálica de Newsreader está cargada justo para eso.
+ * ============================================================================
+ */
+import Button from "@components/ui/Button.astro";
+import Container from "@components/ui/Container.astro";
+
+interface Props {
+  /** Etiqueta corta sobre el titular. Es el ÚNICO texto pequeño permitido. */
+  eyebrow?: string;
+  /** Acepta <em> para enfatizar. Máximo 2 líneas en escritorio. */
+  title: string;
+  /** Máximo 20 palabras. Si no cabe la propuesta en 20, el problema es la propuesta. */
+  subtitle?: string;
+  primaryCta?: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
+}
+
+const { eyebrow, title, subtitle, primaryCta, secondaryCta } = Astro.props;
+
+// El aviso sale en el build, donde alguien lo ve, y no rompe la página.
+if (subtitle && subtitle.trim().split(/\s+/).length > 20) {
+  console.warn(
+    `[Hero] La bajada tiene ${subtitle.trim().split(/\s+/).length} palabras (máx 20). ` +
+      `Recórtala o el hero no cabrá en la primera pantalla.`,
+  );
+}
+---
+
+<section class="pb-section relative overflow-hidden pt-16 sm:pt-24">
+  {
+    /*
+    Luz de marca desplazada a la derecha, para equilibrar el peso del texto a
+    la izquierda sin meter un segundo elemento tipográfico. Decorativa.
+  */
+  }
+  <div
+    class="pointer-events-none absolute -top-32 right-[-10%] h-[36rem] w-[36rem] opacity-50 blur-3xl"
+    aria-hidden="true"
+    style="background: radial-gradient(closest-side, var(--brand-primary-muted), transparent 75%);"
+  >
+  </div>
+
+  <Container class="relative">
+    {
+      /*
+      12 columnas: el texto ocupa 8 en portátil y 7 en escritorio ancho, y el
+      resto queda como aire deliberado.
+      La columna se ensancha en `lg` a propósito: a 1024px el titular sigue casi
+      en el tamaño máximo pero la columna se estrecha, y a 7/12 saltaba a 3
+      líneas. Medido: a 8/12 son 2 líneas en 1024, 1280 y 1440.
+    */
+    }
+    <div class="grid grid-cols-1 gap-y-8 lg:grid-cols-12">
+      <div class="flex flex-col items-start gap-6 lg:col-span-8 xl:col-span-7">
+        {
+          eyebrow && (
+            <p class="animate-rise text-primary text-sm font-semibold" style="animation-delay: 0ms">
+              {eyebrow}
+            </p>
+          )
+        }
+
+        <h1
+          class="animate-rise text-display text-ink max-w-[22ch] font-bold text-balance [&_em]:italic"
+          style="animation-delay: 60ms"
+          set:html={title}
+        />
+
+        {
+          subtitle && (
+            <p
+              class="animate-rise text-lead text-ink-muted max-w-[46ch]"
+              style="animation-delay: 120ms"
+              set:html={subtitle}
+            />
+          )
+        }
+
+        {
+          (primaryCta || secondaryCta) && (
+            <div
+              class="animate-rise mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row"
+              style="animation-delay: 180ms"
+            >
+              {primaryCta && (
+                <Button href={primaryCta.href} size="lg" block class="sm:w-auto">
+                  {primaryCta.label}
+                </Button>
+              )}
+              {secondaryCta && (
+                <Button
+                  href={secondaryCta.href}
+                  variant="outline"
+                  size="lg"
+                  block
+                  class="sm:w-auto"
+                >
+                  {secondaryCta.label}
+                </Button>
+              )}
+            </div>
+          )
+        }
+      </div>
+
+      {
+        /*
+        Ranura para un asset. Si no se usa, la columna NO se renderiza: un div
+        vacío dentro de una rejilla con gap deja un hueco fantasma que en móvil
+        se lee como un error de maquetación, porque ahí no hay nada que
+        justifique el espacio.
+      */
+      }
+      {
+        Astro.slots.has("default") && (
+          <div class="lg:col-span-4 lg:pl-8 xl:col-span-5">
+            <slot />
+          </div>
+        )
+      }
+    </div>
+  </Container>
+</section>
+
+<style>
+  /* Entrada escalonada. 16px de desplazamiento y no 40: un movimiento corto se
+   * lee como "el contenido llegó", uno largo se lee como "la página está
+   * lenta". Solo se animan opacity y transform, que van por GPU.
+   *
+   * 600ms está por encima del tope de 300ms que se aplica al resto de la
+   * interfaz, y es correcto: esto se ve UNA vez por visita y su función es
+   * explicativa, no de respuesta a una acción. El tope corto aplica a lo que
+   * responde a un clic o un hover.
+   *
+   * El bloque de prefers-reduced-motion de global.css ya neutraliza esto. */
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-rise {
+    animation: rise 600ms var(--ease-out-soft) backwards;
+  }
+</style>

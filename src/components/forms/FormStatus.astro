@@ -1,0 +1,88 @@
+---
+/**
+ * ============================================================================
+ *  <FormStatus /> — mensaje del envío completo (no de un campo)
+ * ============================================================================
+ *  Se renderiza vacío y oculto; el script lo llena según el resultado.
+ *
+ *  Sobre el rol ARIA: se usa `role="alert"` y no `role="status"`.
+ *  `alert` interrumpe al lector de pantalla para anunciar el mensaje al
+ *  instante; `status` espera a que termine lo que esté leyendo. Para "no se
+ *  guardaron tus datos" o "listo, ya quedó" la interrupción es lo correcto:
+ *  son el resultado de una acción que la persona acaba de hacer y está
+ *  esperando.
+ *
+ *  `aria-live` va en el contenedor y no en el mensaje: los lectores solo
+ *  anuncian cambios DENTRO de una región viva que ya existía en el DOM. Si el
+ *  elemento con aria-live apareciera junto con el texto, muchos lectores no
+ *  dirían nada.
+ * ============================================================================
+ */
+
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<div data-form-status role="alert" aria-live="assertive" class={className}>
+  <div
+    data-status-box
+    hidden
+    class="rounded-input data-[variant=error]:border-danger data-[variant=error]:bg-danger-soft data-[variant=error]:text-danger data-[variant=loading]:border-line data-[variant=loading]:bg-surface-muted data-[variant=loading]:text-ink-muted data-[variant=success]:border-success data-[variant=success]:bg-success-soft data-[variant=success]:text-success flex items-start gap-3 border px-4 py-3 text-sm"
+  >
+    {/* Los tres iconos viven en el DOM y se muestran según el estado. */}
+    <svg
+      data-status-icon="error"
+      class="mt-0.5 size-5 shrink-0"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="9"></circle>
+      <path d="M12 8v5M12 16.5v.01"></path>
+    </svg>
+
+    <svg
+      data-status-icon="success"
+      class="mt-0.5 size-5 shrink-0"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M20 6 9 17l-5-5"></path>
+    </svg>
+
+    {
+      /*
+      El estado de carga NO lleva icono.
+      Un spinner genérico girando no dice nada que el texto "Enviando…" no
+      diga ya, y añade movimiento en el momento en que la persona está
+      esperando, que es cuando cualquier animación se percibe más larga.
+      El botón deshabilitado y el texto bastan para comunicar el estado.
+    */
+    }
+
+    <span data-status-message></span>
+  </div>
+</div>
+
+<style>
+  /* Solo el icono del estado actual se muestra. */
+  [data-status-icon] {
+    display: none;
+  }
+  [data-variant="error"] [data-status-icon="error"],
+  [data-variant="success"] [data-status-icon="success"],
+  [data-variant="loading"] [data-status-icon="loading"] {
+    display: block;
+  }
+</style>

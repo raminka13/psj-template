@@ -1,0 +1,148 @@
+---
+/**
+ * Post individual.
+ *
+ * Todo el SEO sale del frontmatter: título, descripción, keywords, fechas,
+ * portada, tags y FAQs. No hay nada que escribir a mano por post — que es el
+ * punto de tener un schema de Zod validando el frontmatter.
+ */
+import Faq from "@components/seo/Faq.astro";
+import Badge from "@components/ui/Badge.astro";
+import Container from "@components/ui/Container.astro";
+import Prose from "@components/ui/Prose.astro";
+import Section from "@components/ui/Section.astro";
+import PageLayout from "@layouts/PageLayout.astro";
+import { formatDate, getPublishedPosts, readingTime, tagToSlug, type Post } from "@lib/blog";
+import type { GetStaticPaths } from "astro";
+import { Image } from "astro:assets";
+import { render } from "astro:content";
+
+export const getStaticPaths = (async () => {
+  const posts = await getPublishedPosts();
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const {
+  title,
+  description,
+  keywords,
+  pubDate,
+  updatedDate,
+  author,
+  cover,
+  coverAlt,
+  tags,
+  faqs,
+  noindex,
+} = post.data;
+
+const minutes = readingTime(post.body ?? "");
+---
+
+<PageLayout
+  pageType="ItemPage"
+  seo={{
+    title,
+    description,
+    keywords,
+    type: "article",
+    publishedTime: pubDate,
+    modifiedTime: updatedDate,
+    author,
+    tags,
+    faqs,
+    noindex,
+    image: cover?.src,
+    imageAlt: coverAlt,
+    breadcrumbs: [
+      { name: "Blog", href: "/blog" },
+      { name: title, href: `/blog/${post.id}` },
+    ],
+  }}
+>
+  <article>
+    <Section spacing="sm" width="narrow">
+      <div class="flex flex-col gap-5">
+        <div class="flex flex-wrap items-center gap-2">
+          {
+            tags.map((tag) => (
+              <a href={`/blog/tag/${tagToSlug(tag)}`}>
+                <Badge variant="neutral" size="sm">
+                  {tag}
+                </Badge>
+              </a>
+            ))
+          }
+        </div>
+
+        <h1 class="font-display text-h1 text-ink font-bold">{title}</h1>
+        <p class="text-lead text-ink-muted">{description}</p>
+
+        <div class="text-ink-subtle flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+          <span>{author}</span>
+          <span aria-hidden="true">·</span>
+          <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+          <span aria-hidden="true">·</span>
+          <span>{minutes} min de lectura</span>
+          {
+            updatedDate && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span>Actualizado el {formatDate(updatedDate)}</span>
+              </>
+            )
+          }
+        </div>
+      </div>
+    </Section>
+
+    {
+      cover && (
+        <Container width="narrow">
+          <Image
+            src={cover}
+            alt={coverAlt ?? ""}
+            width={1280}
+            height={720}
+            class="rounded-image aspect-video w-full object-cover"
+            loading="eager"
+          />
+        </Container>
+      )
+    }
+
+    <Section spacing="sm" width="narrow">
+      <Prose>
+        <Content />
+      </Prose>
+    </Section>
+
+    {
+      faqs && faqs.length > 0 && (
+        <Section spacing="sm" width="narrow">
+          <h2 class="font-display text-h2 text-ink mb-8 font-bold">Preguntas frecuentes</h2>
+          <Faq items={faqs} />
+        </Section>
+      )
+    }
+
+    <Section spacing="sm" width="narrow">
+      <a
+        href="/blog"
+        class="text-primary hover:text-primary-hover text-sm font-medium underline underline-offset-4"
+      >
+        ← Ver todos los artículos
+      </a>
+    </Section>
+  </article>
+</PageLayout>

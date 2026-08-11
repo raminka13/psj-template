@@ -1,0 +1,65 @@
+---
+/**
+ * Rejilla de posts + navegación de páginas.
+ * Compartido por /blog y /blog/pagina/N para no duplicar la maqueta.
+ */
+import PostCard from "@components/sections/PostCard.astro";
+import Section from "@components/ui/Section.astro";
+import type { PostPage } from "@lib/blog";
+
+interface Props {
+  page: PostPage;
+}
+
+const { page } = Astro.props;
+---
+
+<Section spacing="sm">
+  {
+    page.posts.length > 0 ? (
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {page.posts.map((post) => (
+          <PostCard post={post} />
+        ))}
+      </div>
+    ) : (
+      <p class="text-ink-muted text-center">Todavía no hay artículos publicados.</p>
+    )
+  }
+
+  {
+    page.totalPages > 1 && (
+      <nav class="mt-12 flex items-center justify-between gap-4" aria-label="Paginación">
+        {/* Los <span> vacíos mantienen el número centrado cuando falta un
+            botón, sin recurrir a posicionamiento absoluto. */}
+        {page.prevUrl ? (
+          <a
+            href={page.prevUrl}
+            rel="prev"
+            class="rounded-btn border-line text-ink hover:border-primary hover:text-primary border px-4 py-2 text-sm font-medium transition-colors duration-200"
+          >
+            ← Anteriores
+          </a>
+        ) : (
+          <span />
+        )}
+
+        <span class="text-ink-subtle text-sm">
+          Página {page.currentPage} de {page.totalPages}
+        </span>
+
+        {page.nextUrl ? (
+          <a
+            href={page.nextUrl}
+            rel="next"
+            class="rounded-btn border-line text-ink hover:border-primary hover:text-primary border px-4 py-2 text-sm font-medium transition-colors duration-200"
+          >
+            Siguientes →
+          </a>
+        ) : (
+          <span />
+        )}
+      </nav>
+    )
+  }
+</Section>

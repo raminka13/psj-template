@@ -1,0 +1,286 @@
+---
+/**
+ * ============================================================================
+ *  Header — barra superior con submenú de retos
+ * ============================================================================
+ *  El submenú se abre al pasar el ratón, pero eso es solo UNA de las tres
+ *  formas de llegar a él. Un desplegable que solo responde a `:hover` deja
+ *  fuera a dos grupos enteros:
+ *
+ *   · Teclado → se resuelve con `:focus-within`. Al tabular hasta el enlace
+ *     padre, el panel aparece y sus enlaces entran en el orden de tabulación.
+ *     Funciona sin una línea de JavaScript.
+ *
+ *   · Táctil → en un móvil o tablet no existe el hover. Por eso el enlace
+ *     padre navega a /retos, una página real con todos los retos. Tocarlo
+ *     lleva a algún sitio en vez de no hacer nada.
+ *
+ *  El panel no deja hueco con el disparador: se separa con padding propio y
+ *  no con margen, para que al bajar el ratón no cruce una zona muerta y el
+ *  menú se cierre a medio camino.
+ * ============================================================================
+ */
+import Container from "@components/ui/Container.astro";
+import ThemeToggle from "@components/ui/ThemeToggle.astro";
+import { headerCta, mainNav } from "@config/navigation";
+import { site } from "@config/site";
+import { getRetos } from "@lib/content";
+
+const currentPath = Astro.url.pathname.replace(/\/+$/, "") || "/";
+
+// Los retos alimentan el submenú. Se leen aquí porque la config es síncrona.
+const retos = await getRetos();
+
+function isActive(href: string): boolean {
+  if (href.startsWith("/#")) return false;
+  if (href === "/") return currentPath === "/";
+  return currentPath === href || currentPath.startsWith(href + "/");
+}
+---
+
+<header class="h-header border-line bg-surface/80 sticky top-0 z-50 border-b backdrop-blur-md">
+  <Container class="flex h-full items-center justify-between gap-6">
+    {/* Logo */}
+    <a
+      href="/"
+      class="font-display text-ink hover:text-primary flex shrink-0 items-center gap-2 text-lg font-bold transition-colors duration-150"
+    >
+      <span
+        class="rounded-btn bg-primary text-on-primary grid size-9 place-items-center font-bold"
+        aria-hidden="true">P</span
+      >
+      <span>{site.shortName}</span>
+    </a>
+
+    {/* Menú de escritorio */}
+    <nav class="hidden md:block" aria-label="Navegación principal">
+      <ul class="flex items-center gap-1">
+        {
+          mainNav.map((link) => {
+            const items = link.dropdown === "retos" ? retos : [];
+            const hasDropdown = items.length > 0;
+
+            return (
+              <li
+                class={hasDropdown ? "relative" : ""}
+                data-nav-item={hasDropdown ? "" : undefined}
+              >
+                <a
+                  href={link.href}
+                  aria-current={isActive(link.href) ? "page" : undefined}
+                  aria-haspopup={hasDropdown ? "true" : undefined}
+                  class:list={[
+                    "rounded-btn ease-out-soft flex items-center gap-1 px-3 py-2 text-sm font-medium transition-colors duration-150",
+                    isActive(link.href)
+                      ? "bg-primary-soft text-primary"
+                      : "text-ink-muted hover:bg-surface-muted hover:text-ink",
+                  ]}
+                >
+                  {link.label}
+                  {hasDropdown && (
+                    <svg
+                      data-nav-chevron
+                      class="ease-out-soft size-3.5 transition-transform duration-200"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  )}
+                </a>
+
+                {hasDropdown && (
+                  <div data-nav-panel class="absolute top-full left-0 pt-2">
+                    <ul class="rounded-card border-line bg-surface-raised w-80 border p-2 shadow-lg">
+                      {items.map((reto) => (
+                        <li>
+                          <a
+                            href={`/retos/${reto.id}`}
+                            class="rounded-btn hover:bg-surface-muted group/item flex flex-col gap-0.5 px-3 py-2.5 transition-colors duration-150"
+                          >
+                            <span class="text-ink group-hover/item:text-primary text-sm font-semibold transition-colors duration-150">
+                              {reto.data.title}
+                            </span>
+                            <span class="text-ink-subtle text-xs">{reto.data.tagline}</span>
+                          </a>
+                        </li>
+                      ))}
+
+                      <li class="border-line mt-1 border-t pt-1">
+                        <a
+                          href="/retos"
+                          class="rounded-btn text-primary hover:bg-primary-soft block px-3 py-2 text-sm font-medium transition-colors duration-150"
+                        >
+                          Ver todos los retos
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </li>
+            );
+          })
+        }
+      </ul>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <ThemeToggle />
+
+      <a
+        href={headerCta.href}
+        class="rounded-btn bg-primary text-on-primary shadow-brand ease-out-soft hover:bg-primary-hover hidden h-10 items-center px-5 text-sm font-semibold transition-colors duration-150 sm:inline-flex"
+      >
+        {headerCta.label}
+      </a>
+
+      {/* Menú móvil */}
+      <details class="group relative md:hidden">
+        <summary
+          class="rounded-btn text-ink hover:bg-surface-muted grid size-10 cursor-pointer list-none place-items-center transition-colors duration-150"
+          aria-label="Abrir menú"
+        >
+          <svg
+            class="size-5"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path class="group-open:hidden" d="M4 6h16M4 12h16M4 18h16"></path>
+            <path class="hidden group-open:block" d="M6 6l12 12M18 6L6 18"></path>
+          </svg>
+        </summary>
+
+        <nav
+          class="rounded-card border-line bg-surface-raised absolute top-12 right-0 max-h-[70vh] w-64 overflow-y-auto border p-2 shadow-lg"
+          aria-label="Navegación móvil"
+        >
+          {
+            mainNav.map((link) => (
+              <>
+                <a
+                  href={link.href}
+                  class="rounded-btn text-ink-muted hover:bg-surface-muted hover:text-ink block px-3 py-2.5 text-sm font-medium transition-colors duration-150"
+                >
+                  {link.label}
+                </a>
+
+                {/*
+                  En móvil los retos se listan indentados bajo su padre, no en
+                  un desplegable: un submenú dentro de otro menú desplegable
+                  obliga a dos toques para llegar a algo que cabe entero en
+                  pantalla.
+                */}
+                {link.dropdown === "retos" &&
+                  retos.map((reto) => (
+                    <a
+                      href={`/retos/${reto.id}`}
+                      class="rounded-btn text-ink-subtle hover:bg-surface-muted hover:text-ink border-line ml-3 block border-l py-2 pl-3 text-sm transition-colors duration-150"
+                    >
+                      {reto.data.title}
+                    </a>
+                  ))}
+              </>
+            ))
+          }
+
+          <a
+            href={headerCta.href}
+            class="rounded-btn bg-primary text-on-primary mt-1 block px-3 py-2.5 text-center text-sm font-semibold"
+          >
+            {headerCta.label}
+          </a>
+        </nav>
+      </details>
+    </div>
+  </Container>
+</header>
+
+<style>
+  /* Estado cerrado por defecto. `visibility: hidden` y no `display: none` a
+   * propósito: saca los enlaces del orden de tabulación igual, pero permite
+   * animar la opacidad, cosa que display no. */
+  [data-nav-panel] {
+    visibility: hidden;
+    opacity: 0;
+    /* Retardo asimétrico: abre al instante y cierra con 200ms de gracia.
+     * Ese retardo es lo que hace usable el menú con ratón. Sin él, cualquier
+     * micro-desvío en diagonal camino del panel lo cierra a mitad de
+     * trayecto y hay que empezar de nuevo. */
+    transition:
+      opacity 150ms var(--ease-out-soft),
+      visibility 0s linear 200ms;
+  }
+
+  /* Se abre con ratón Y con teclado. `:focus-within` es lo que lo hace
+   * accesible: al tabular hasta el enlace padre, el panel aparece y sus
+   * enlaces entran en el orden de tabulación. Cero JavaScript. */
+  li:hover > [data-nav-panel],
+  li:focus-within > [data-nav-panel] {
+    visibility: visible;
+    opacity: 1;
+    transition:
+      opacity 150ms var(--ease-out-soft),
+      visibility 0s;
+  }
+
+  li:hover [data-nav-chevron],
+  li:focus-within [data-nav-chevron] {
+    transform: rotate(180deg);
+  }
+
+  /* Cierre forzado por Escape.
+   *
+   * Hace falta un estado propio porque el panel se mantiene abierto con
+   * :focus-within, y al pulsar Escape el foco DEBE quedarse en el enlace
+   * padre (quien navega con teclado tiene que conservar su sitio). Sin este
+   * override, Escape no cerraría nada.
+   *
+   * Gana en especificidad a las utilidades group-hover/group-focus-within
+   * de Tailwind: atributo + atributo pesa más que clase. */
+  li[data-nav-closed]:hover > [data-nav-panel],
+  li[data-nav-closed]:focus-within > [data-nav-panel] {
+    visibility: hidden;
+    opacity: 0;
+    transition: none;
+  }
+
+  li[data-nav-closed]:focus-within [data-nav-chevron] {
+    transform: none;
+  }
+</style>
+
+<script>
+  function setupNavDropdowns() {
+    document.querySelectorAll<HTMLElement>("li[data-nav-item]").forEach((item) => {
+      if (item.dataset.ready === "true") return;
+      item.dataset.ready = "true";
+
+      item.addEventListener("keydown", (event) => {
+        if ((event as KeyboardEvent).key !== "Escape") return;
+
+        item.dataset.navClosed = "true";
+        // El foco vuelve al enlace padre en vez de perderse en el documento.
+        item.querySelector<HTMLElement>("a")?.focus();
+      });
+
+      // El cierre forzado se levanta en cuanto la persona vuelve a interactuar:
+      // si no, el menú quedaría muerto hasta recargar la página.
+      const reabrir = () => delete item.dataset.navClosed;
+      item.addEventListener("mouseenter", reabrir);
+      item.addEventListener("focusout", (event) => {
+        if (!item.contains((event as FocusEvent).relatedTarget as Node)) reabrir();
+      });
+    });
+  }
+
+  document.addEventListener("astro:page-load", setupNavDropdowns);
+</script>

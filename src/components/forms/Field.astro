@@ -1,0 +1,203 @@
+---
+/**
+ * Renderiza un campo cualquiera del registro de formularios.
+ *
+ * Cada campo lleva tres mensajes posibles bajo él, siempre presentes en el DOM
+ * y ocultos hasta que hacen falta:
+ *   - la pista (hint), visible en reposo
+ *   - el error, cuando la validación falla
+ *   - el éxito, cuando queda bien (solo si el campo declara uno)
+ *
+ * Se renderizan siempre y no "cuando toque" porque el JavaScript necesita un
+ * sitio donde escribir: si el <p> solo existiera al haber error, el script no
+ * tendría dónde ponerlo y la persona vería el borde rojo sin saber qué corregir.
+ *
+ * Accesibilidad:
+ *   - <label for> real, no un placeholder haciendo de etiqueta. El placeholder
+ *     desaparece al escribir y quien usa lector de pantalla se queda sin saber
+ *     qué campo es.
+ *   - aria-invalid + aria-describedby con los tres ids. Los ocultos no se
+ *     anuncian, así que solo se lee el que está visible.
+ *   - El valor previo se conserva tras un error: nadie debería reescribir todo.
+ */
+import { fieldMessages, type FormField } from "@config/forms";
+
+interface Props {
+  field: FormField;
+  /** Prefijo del id, para que dos formularios en la misma página no choquen. */
+  idPrefix: string;
+  /** Mensaje de error del servidor, si lo hubo (camino sin JavaScript). */
+  error?: string;
+  /** Valor previo, para no perder lo escrito. */
+  value?: string;
+}
+
+const { field, idPrefix, error, value } = Astro.props;
+
+const id = `${idPrefix}-${field.name}`;
+const errorId = `${id}-error`;
+const hintId = `${id}-hint`;
+const successId = `${id}-success`;
+
+const msg = fieldMessages(field);
+
+const describedBy = [errorId, successId, field.hint ? hintId : null].filter(Boolean).join(" ");
+
+const currentValue = value ?? field.value ?? "";
+
+/**
+ * Los mensajes viajan como atributos data-* para que el script los use sin
+ * tener que duplicar el registro en el bundle del cliente.
+ */
+const messageAttrs = {
+  "data-msg-required": msg.required,
+  "data-msg-invalid": msg.invalid,
+  ...(field.minLength ? { "data-min-length": String(field.minLength) } : {}),
+  ...(field.maxLength ? { "data-max-length": String(field.maxLength) } : {}),
+};
+
+// El estado lo maneja el script vía data-state; aquí solo se pinta el inicial.
+const baseInput = [
+  "w-full rounded-input border bg-surface px-4 py-3 text-ink",
+  "placeholder:text-ink-subtle",
+  "transition-colors duration-200 ease-out-soft",
+  "border-line hover:border-line-strong",
+  "data-[state=error]:border-danger",
+  "data-[state=success]:border-success",
+].join(" ");
+
+const colSpan = field.width === "half" ? "sm:col-span-1" : "sm:col-span-2";
+---
+
+{
+  field.type === "hidden" ? (
+    <input type="hidden" name={field.name} value={currentValue} />
+  ) : (
+    <div class={`col-span-2 flex flex-col gap-1.5 ${colSpan}`} data-field={field.name}>
+      {field.type === "checkbox" ? (
+        <label class="text-ink-muted flex cursor-pointer items-start gap-3 text-sm">
+          <input
+            type="checkbox"
+            id={id}
+            name={field.name}
+            required={field.required}
+            checked={currentValue === "on"}
+            data-state={error ? "error" : undefined}
+            aria-invalid={error ? "true" : undefined}
+            aria-describedby={describedBy}
+            class="border-line accent-primary data-[state=error]:border-danger mt-0.5 size-5 shrink-0 rounded-[0.3rem]"
+            {...messageAttrs}
+          />
+          <span set:html={field.label} />
+        </label>
+      ) : (
+        <>
+          <label for={id} class="text-ink text-sm font-medium">
+            {field.label}
+            {field.required && (
+              <span class="text-danger" aria-hidden="true">
+                {" "}
+                *
+              </span>
+            )}
+          </label>
+
+          <div class="relative">
+            {field.type === "textarea" ? (
+              <textarea
+                id={id}
+                name={field.name}
+                rows={5}
+                placeholder={field.placeholder}
+                required={field.required}
+                autocomplete={field.autocomplete}
+                data-state={error ? "error" : undefined}
+                aria-invalid={error ? "true" : undefined}
+                aria-describedby={describedBy}
+                class={`${baseInput} resize-y`}
+                set:text={currentValue}
+                {...messageAttrs}
+              />
+            ) : field.type === "select" ? (
+              <select
+                id={id}
+                name={field.name}
+                required={field.required}
+                data-state={error ? "error" : undefined}
+                aria-invalid={error ? "true" : undefined}
+                aria-describedby={describedBy}
+                class={baseInput}
+                {...messageAttrs}
+              >
+                {field.options?.map((option) => (
+                  <option value={option.value} selected={option.value === currentValue}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type={field.type}
+                id={id}
+                name={field.name}
+                placeholder={field.placeholder}
+                required={field.required}
+                autocomplete={field.autocomplete}
+                value={currentValue}
+                data-state={error ? "error" : undefined}
+                aria-invalid={error ? "true" : undefined}
+                aria-describedby={describedBy}
+                class={baseInput}
+                {...messageAttrs}
+              />
+            )}
+
+            {/*
+              Palomita de campo correcto. Decorativa: el estado ya lo comunica
+              aria-invalid, y repetirlo en texto para el lector de pantalla
+              sería ruido en cada campo.
+              En textarea no se pinta: quedaría flotando sobre el texto.
+            */}
+            {field.type !== "textarea" && field.type !== "select" && (
+              <span
+                data-field-check
+                hidden
+                class="text-success pointer-events-none absolute top-1/2 right-3 -translate-y-1/2"
+                aria-hidden="true"
+              >
+                <svg
+                  class="size-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </span>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Pista en reposo. Se esconde mientras haya error o éxito, para no competir. */}
+      {field.hint && (
+        <p id={hintId} data-field-hint hidden={Boolean(error)} class="text-ink-subtle text-xs">
+          {field.hint}
+        </p>
+      )}
+
+      {/* Error. Siempre en el DOM; se llena y se muestra al fallar. */}
+      <p id={errorId} data-field-error hidden={!error} class="text-danger text-xs font-medium">
+        {error}
+      </p>
+
+      {/* Éxito. Solo si el campo declaró un mensaje que añada información. */}
+      <p id={successId} data-field-success hidden class="text-success text-xs font-medium">
+        {msg.success}
+      </p>
+    </div>
+  )
+}

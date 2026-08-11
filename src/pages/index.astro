@@ -1,0 +1,200 @@
+---
+/**
+ * ============================================================================
+ *  HOME — landing de demostración
+ * ============================================================================
+ *  Es una página real y funcional que sirve de referencia: muestra cómo se
+ *  arma una landing con las secciones del template y cómo se conecta el SEO.
+ *  Al clonar el template para una página nueva, este archivo es el que se
+ *  reescribe.
+ *
+ *  Fíjate en el patrón de `faqs`: el MISMO array va al layout (que genera el
+ *  FAQPage del JSON-LD) y al <FaqSection /> (que lo dibuja). Una sola fuente.
+ * ============================================================================
+ */
+import CtaBanner from "@components/cta/CtaBanner.astro";
+import CtaSticky from "@components/cta/CtaSticky.astro";
+import Form from "@components/forms/Form.astro";
+import FaqSection from "@components/sections/FaqSection.astro";
+import Features from "@components/sections/Features.astro";
+import Hero from "@components/sections/Hero.astro";
+import Steps from "@components/sections/Steps.astro";
+import Testimonials from "@components/sections/Testimonials.astro";
+import Container from "@components/ui/Container.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import PageLayout from "@layouts/PageLayout.astro";
+import { getFaqs, getRetos, getTestimonios } from "@lib/content";
+
+// Contenido compartido, ya ordenado. Editando los JSON de src/data cambian
+// todas las páginas que los usan.
+const faqs = await getFaqs();
+const testimonios = await getTestimonios({ featuredOnly: true });
+
+/**
+ * Los retos salen de la colección, no de un array escrito aquí. Antes estaban
+ * duplicados en esta página: con páginas propias, menú y footer alimentándose
+ * de lo mismo, un array suelto habría quedado desfasado a la primera edición.
+ * Cada tarjeta enlaza a la página del reto.
+ */
+const retos = (await getRetos({ featuredOnly: true })).map((reto) => ({
+  icon: reto.data.icon,
+  title: reto.data.title,
+  description: reto.data.description,
+  href: `/retos/${reto.id}`,
+}));
+
+const comoFunciona = [
+  {
+    icon: "calendar-check",
+    title: "Elige tu reto",
+    description: "Empiezas el lunes siguiente, con un grupo que arranca contigo el mismo día.",
+  },
+  {
+    icon: "clock",
+    title: "15 minutos al día",
+    description: "Una lección corta cada mañana. Si te saltas un día, el contenido no se vence.",
+  },
+  {
+    icon: "users",
+    title: "No lo haces solo",
+    description: "Grupo de acompañamiento y sesiones en vivo para preguntar lo que se atore.",
+  },
+  {
+    icon: "infinity",
+    title: "Acceso de por vida",
+    description: "Lo repites las veces que quieras, con todas las actualizaciones incluidas.",
+  },
+];
+---
+
+<PageLayout
+  seo={{
+    description:
+      "Retos de 21 días para crecer en fe y sabiduría, con acompañamiento en vivo y una comunidad en español. Acceso de por vida y garantía de 14 días.",
+    keywords: [
+      "reto de fe 21 días",
+      "crecimiento espiritual en español",
+      "devocional diario",
+      "comunidad cristiana online",
+    ],
+    faqs,
+  }}
+>
+  {
+    /*
+    Hero: 4 elementos de texto exactos. El énfasis del titular es <em> —
+    itálica de la misma serif — y no un degradado de color.
+  */
+  }
+  <Hero
+    eyebrow="Nuevo grupo cada lunes"
+    title="Quince minutos que <em>te cambian el día</em>"
+    subtitle="Retos cortos, con acompañamiento real y una comunidad en español que sí responde."
+    primaryCta={{ label: "Empezar el reto", href: "#registro" }}
+    secondaryCta={{ label: "Leer el blog", href: "/blog" }}
+  />
+
+  {
+    /*
+    La prueba social que antes vivía dentro del hero. Fuera de él tiene sitio
+    para respirar y deja el hero en un solo mensaje.
+  */
+  }
+  <Container>
+    <p
+      class="border-line text-ink-muted flex flex-wrap items-center gap-x-3 gap-y-1 border-y py-4 text-sm"
+    >
+      <span><strong class="text-ink font-semibold">+5.000 personas</strong> ya empezaron</span>
+      <span class="text-ink-subtle" aria-hidden="true">·</span>
+      <span>Garantía de 14 días</span>
+      <span class="text-ink-subtle" aria-hidden="true">·</span>
+      <span>Acceso de por vida</span>
+    </p>
+  </Container>
+
+  {/* Sin eyebrow: la posición en la página ya dice qué es esta sección. */}
+  <Features
+    id="retos"
+    title="Elige por dónde empezar"
+    subtitle="Tres caminos distintos. No hay orden obligatorio: escoge el que se parezca a lo que traes ahora."
+    items={retos}
+    columns={3}
+    background="muted"
+  />
+
+  {
+    /*
+    Familia de layout distinta a propósito. Antes esto era otra rejilla de
+    tarjetas idéntica a la de arriba; como secuencia numerada se entiende que
+    hay un orden, que es justo lo que la rejilla escondía.
+  */
+  }
+  <Steps
+    id="como-funciona"
+    title="Pensado para una semana ocupada"
+    subtitle="La razón número uno por la que la gente abandona un programa es que no cabe en su día. Este cabe."
+    items={comoFunciona}
+  />
+
+  <Testimonials
+    id="testimonios"
+    eyebrow="Testimonios"
+    title="Lo que dicen quienes ya lo hicieron"
+    items={testimonios}
+  />
+
+  {
+    /*
+    Registro en dos columnas: el argumento a la izquierda, el formulario a la
+    derecha. Otra familia de layout más, y el formulario deja de ser una
+    columna centrada perdida en medio de la página.
+
+    El formulario se dibuja desde src/config/forms.ts y postea a /api/form,
+    que lo reenvía a GoHighLevel desde el servidor. Funciona sin JavaScript.
+  */
+  }
+  <Section id="registro" background="muted">
+    <div class="grid items-start gap-x-12 gap-y-10 lg:grid-cols-12">
+      <div class="lg:col-span-5">
+        <SectionHeading
+          title="Aparta tu lugar para el lunes"
+          subtitle="Déjanos tu nombre y tu correo. Te mandamos el acceso y los recordatorios."
+        />
+      </div>
+      <div class="lg:col-span-6 lg:col-start-7">
+        <Form id="optin-reto" location="seccion-registro" />
+      </div>
+    </div>
+  </Section>
+
+  {
+    /*
+    Contacto con successMode "inline": el mensaje de éxito reemplaza al
+    formulario sin cambiar de página.
+  */
+  }
+  <Section id="contacto" width="narrow">
+    <SectionHeading
+      title="¿Tienes una duda antes de entrar?"
+      subtitle="Escríbenos y te respondemos en menos de 24 horas hábiles."
+    />
+    <div class="mt-10 max-w-lg">
+      <Form id="contacto" location="seccion-contacto" />
+    </div>
+  </Section>
+
+  <FaqSection
+    eyebrow="Preguntas"
+    title="Lo que más nos preguntan"
+    subtitle="Si tu duda no está aquí, escríbenos y te contestamos."
+    items={faqs}
+    background="default"
+  />
+
+  {/* Texto, enlace y nota salen del registro de CTAs. */}
+  <CtaBanner id="empezar-reto" anchorId="cta-final" location="cierre" />
+
+  {/* Barra fija en móvil; se esconde cuando el CTA de cierre está a la vista. */}
+  <CtaSticky id="empezar-reto" hideNear="#cta-final" showAfter={700} />
+</PageLayout>

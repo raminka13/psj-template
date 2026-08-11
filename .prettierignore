@@ -1,0 +1,8 @@
+dist
+.astro
+node_modules
+package-lock.json
+
+# Los skills son código de terceros: no los reformateamos.
+.claude/skills
+.agents

@@ -1,0 +1,91 @@
+---
+/**
+ * Bloque ancho de cierre de página. El CTA más visible de una landing.
+ *
+ *     <CtaBanner id="empezar-reto" />
+ *
+ * Acepta también props sueltas para casos únicos que no valen la pena meter
+ * al registro.
+ */
+import Button from "@components/ui/Button.astro";
+import Container from "@components/ui/Container.astro";
+import { getCta } from "@config/ctas";
+
+interface Props {
+  /** id del registro. Si se da, rellena título, texto, botones y nota. */
+  id?: string;
+  title?: string;
+  subtitle?: string;
+  primaryCta?: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
+  note?: string;
+  location?: string;
+  anchorId?: string;
+}
+
+const { id, location = "banner", anchorId, ...overrides } = Astro.props;
+
+const cta = id ? getCta(id) : null;
+
+const title = overrides.title ?? cta?.title ?? cta?.label ?? "";
+const subtitle = overrides.subtitle ?? cta?.description;
+const note = overrides.note ?? cta?.note;
+const primary = overrides.primaryCta ?? (cta ? { label: cta.label, href: cta.href } : null);
+const secondary = overrides.secondaryCta ?? cta?.secondary;
+---
+
+<section id={anchorId} class="py-section">
+  <Container>
+    <div
+      class="rounded-card bg-surface-inverse relative overflow-hidden px-6 py-16 text-center sm:px-12"
+    >
+      {/* Halo de marca sobre el bloque oscuro. Decorativo. */}
+      <div
+        class="pointer-events-none absolute inset-0 opacity-40"
+        aria-hidden="true"
+        style="background: radial-gradient(60% 80% at 50% 0%, var(--brand-primary), transparent 70%);"
+      >
+      </div>
+
+      <div class="relative flex flex-col items-center gap-5">
+        <h2 class="font-display text-h1 text-ink-inverse max-w-3xl font-bold" set:html={title} />
+
+        {subtitle && <p class="measure text-lead text-ink-inverse/75" set:html={subtitle} />}
+
+        <div class="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+          {
+            primary && (
+              <Button
+                href={primary.href}
+                size="lg"
+                block
+                class="sm:w-auto"
+                data-cta={id ?? "banner"}
+                data-cta-location={location}
+              >
+                {primary.label}
+              </Button>
+            )
+          }
+          {
+            secondary && (
+              <Button
+                href={secondary.href}
+                variant="ghost"
+                size="lg"
+                block
+                class="text-ink-inverse hover:bg-ink-inverse/10 hover:text-ink-inverse sm:w-auto"
+                data-cta={`${id ?? "banner"}-secundario`}
+                data-cta-location={location}
+              >
+                {secondary.label}
+              </Button>
+            )
+          }
+        </div>
+
+        {note && <p class="text-ink-inverse/60 text-sm">{note}</p>}
+      </div>
+    </div>
+  </Container>
+</section>

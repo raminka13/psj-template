@@ -1,0 +1,36 @@
+---
+/**
+ * Sección de preguntas frecuentes.
+ *
+ * RECORDATORIO: el mismo array `items` debe ir también en `seo.faqs` del
+ * layout, para que el JSON-LD y el texto visible no se separen. Ver el
+ * comentario largo en src/components/seo/Faq.astro.
+ */
+import Faq from "@components/seo/Faq.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import type { FaqItem } from "@lib/seo";
+
+interface Props {
+  eyebrow?: string;
+  title?: string;
+  subtitle?: string;
+  items: FaqItem[];
+  background?: "default" | "muted" | "soft";
+  id?: string;
+}
+
+const {
+  eyebrow,
+  title = "Preguntas frecuentes",
+  subtitle,
+  items,
+  background = "default",
+  id = "preguntas",
+} = Astro.props;
+---
+
+<Section id={id} background={background} width="narrow">
+  <SectionHeading eyebrow={eyebrow} title={title} subtitle={subtitle} />
+  <Faq items={items} class="mt-12" />
+</Section>

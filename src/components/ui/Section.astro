@@ -1,0 +1,61 @@
+---
+/**
+ * Bloque vertical de la página, con su aire y su fondo.
+ *
+ * El espaciado sale de --spacing-section (py-section). Cambiar ese token en
+ * tokens.css cambia el ritmo de toda la página de una vez — que es la razón
+ * de que ningún componente escriba py-24 a mano.
+ */
+import type { HTMLTag } from "astro/types";
+import Container from "./Container.astro";
+
+interface Props {
+  /** Fondo de la sección. `muted` sirve para alternar y marcar el ritmo. */
+  background?: "default" | "muted" | "inverse" | "soft";
+  /** Aire vertical. `sm` para secciones de apoyo, `none` para control manual. */
+  spacing?: "default" | "sm" | "none";
+  width?: "default" | "narrow" | "wide";
+  /** id para anclas del menú. */
+  id?: string;
+  as?: HTMLTag;
+  class?: string;
+  /** Salta el <Container> interno, para secciones a sangre completa. */
+  bleed?: boolean;
+}
+
+// Ver la nota sobre `: Props` en Container.astro.
+const {
+  background = "default",
+  spacing = "default",
+  width = "default",
+  id,
+  as: Tag = "section",
+  class: className = "",
+  bleed = false,
+}: Props = Astro.props;
+
+const backgrounds = {
+  default: "bg-surface text-ink",
+  muted: "bg-surface-muted text-ink",
+  inverse: "bg-surface-inverse text-ink-inverse",
+  soft: "bg-primary-soft text-ink",
+};
+
+const spacings = {
+  default: "py-section",
+  sm: "py-section-sm",
+  none: "",
+};
+---
+
+<Tag id={id} class={`${backgrounds[background]} ${spacings[spacing]} ${className}`}>
+  {
+    bleed ? (
+      <slot />
+    ) : (
+      <Container width={width}>
+        <slot />
+      </Container>
+    )
+  }
+</Tag>

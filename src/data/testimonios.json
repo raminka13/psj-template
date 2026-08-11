@@ -1,0 +1,56 @@
+[
+  {
+    "id": "maria-g",
+    "order": 1,
+    "programa": "reto-sabiduria",
+    "featured": true,
+    "quote": "Llevaba años leyendo sin entender. En tres semanas cambió la forma en que empiezo mi día, y eso se notó en cómo trato a mi familia.",
+    "name": "María González",
+    "role": "Monterrey, México"
+  },
+  {
+    "id": "carlos-r",
+    "order": 2,
+    "programa": "reto-sabiduria",
+    "featured": true,
+    "quote": "Lo que más me sirvió fue el grupo. Saber que otras personas estaban en lo mismo el mismo día me hizo no abandonar en la semana dos.",
+    "name": "Carlos Ramírez",
+    "role": "Bogotá, Colombia"
+  },
+  {
+    "id": "ana-m",
+    "order": 3,
+    "programa": "mas-sabiduria",
+    "featured": true,
+    "quote": "Pensé que no iba a tener tiempo. Son quince minutos en la mañana y ya no me los quito por nada.",
+    "name": "Ana Martínez",
+    "role": "Madrid, España"
+  },
+  {
+    "id": "jose-l",
+    "order": 4,
+    "programa": "emprende",
+    "featured": false,
+    "quote": "Le di estructura a una idea que traía dando vueltas dos años. Hoy ya tengo mis primeros clientes.",
+    "name": "José Luis Herrera",
+    "role": "Guadalajara, México"
+  },
+  {
+    "id": "patricia-s",
+    "order": 5,
+    "programa": "general",
+    "featured": false,
+    "quote": "La diferencia con otros programas es que aquí sí te contestan. Pregunté algo un martes y el jueves lo respondieron en vivo.",
+    "name": "Patricia Salazar",
+    "role": "Lima, Perú"
+  },
+  {
+    "id": "roberto-v",
+    "order": 6,
+    "programa": "general",
+    "featured": false,
+    "quote": "Lo empecé por curiosidad y terminé metiendo a mi esposa y a mi hermana. Ahora lo hacemos los tres.",
+    "name": "Roberto Vega",
+    "role": "Santiago, Chile"
+  }
+]

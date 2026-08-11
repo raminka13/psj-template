@@ -1,0 +1,101 @@
+---
+/**
+ * ============================================================================
+ *  BaseLayout — el <html> completo, sin header ni footer
+ * ============================================================================
+ *  Úsalo directo solo para páginas que necesitan lienzo limpio: páginas de
+ *  venta largas, checkouts, replays. Para todo lo demás usa PageLayout, que
+ *  agrega header y footer encima de este.
+ * ============================================================================
+ */
+import { Font } from "astro:assets";
+import { ClientRouter } from "astro:transitions";
+
+import ThemeVars from "@components/ThemeVars.astro";
+import CtaTracking from "@components/cta/CtaTracking.astro";
+import UtmCapture from "@components/forms/UtmCapture.astro";
+import Seo from "@components/seo/Seo.astro";
+import { site } from "@config/site";
+import type { ThemeOverrides } from "@config/theme";
+import type { SchemaNode } from "@lib/schema";
+import type { SeoProps } from "@lib/seo";
+import "@styles/global.css";
+
+interface Props {
+  seo?: SeoProps;
+  /** Sobrescribe tokens solo en esta página. Ver src/config/theme.ts. */
+  theme?: ThemeOverrides;
+  pageType?: "WebPage" | "CollectionPage" | "ItemPage" | "AboutPage" | "ContactPage";
+  schemaExtra?: SchemaNode[];
+  /** Clases extra para <body>. */
+  bodyClass?: string;
+}
+
+const { seo = {}, theme, pageType, schemaExtra, bodyClass = "" } = Astro.props;
+---
+
+<!doctype html>
+<html lang={site.lang} data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title={site.name} href="/rss.xml" />
+    <meta name="generator" content={Astro.generator} />
+
+    <Font cssVariable="--font-body" preload />
+    <Font cssVariable="--font-heading" preload />
+
+    <Seo {...seo} pageType={pageType} schemaExtra={schemaExtra} themeColor={theme?.primary} />
+    <ThemeVars theme={theme} />
+
+    <ClientRouter />
+
+    {
+      /*
+      Tema antes del primer paint.
+      Va inline y sin `defer` a propósito: si el atributo data-theme se
+      escribiera después de que el navegador pinta, quien tiene modo oscuro
+      vería un flashazo blanco en cada carga. Es el único script que se
+      permite bloquear el render.
+    */
+    }
+    <script is:inline>
+      (function () {
+        try {
+          var saved = localStorage.getItem("theme");
+          var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.dataset.theme = saved || (prefersDark ? "dark" : "light");
+        } catch (e) {
+          // localStorage bloqueado (modo privado, cookies deshabilitadas):
+          // se queda en el tema claro del atributo por defecto.
+        }
+      })();
+    </script>
+  </head>
+
+  <body class={bodyClass}>
+    <a href="#main" class="skip-link">Saltar al contenido</a>
+    <slot />
+
+    <UtmCapture />
+    <CtaTracking />
+
+    {
+      /*
+      Con vista de transiciones el <head> se reemplaza en cada navegación,
+      así que el tema hay que volver a aplicarlo al terminar el swap.
+    */
+    }
+    <script is:inline>
+      document.addEventListener("astro:after-swap", function () {
+        try {
+          var saved = localStorage.getItem("theme");
+          var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.dataset.theme = saved || (prefersDark ? "dark" : "light");
+        } catch (e) {}
+      });
+    </script>
+  </body>
+</html>

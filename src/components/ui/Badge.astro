@@ -1,0 +1,43 @@
+---
+/**
+ * Etiqueta pequeña: categoría de un post, "Nuevo", "Cupos limitados".
+ * El radio sale de --radius-badge (por defecto, píldora).
+ */
+import type { HTMLTag } from "astro/types";
+
+interface Props {
+  variant?: "primary" | "secondary" | "accent" | "neutral" | "success" | "warning" | "danger";
+  size?: "sm" | "md";
+  as?: HTMLTag;
+  class?: string;
+}
+
+// Ver la nota sobre `: Props` en Container.astro.
+const {
+  variant = "primary",
+  size = "md",
+  as: Tag = "span",
+  class: className = "",
+}: Props = Astro.props;
+
+const variants = {
+  primary: "bg-primary-soft text-primary",
+  secondary: "bg-secondary-soft text-ink",
+  accent: "bg-accent-soft text-ink",
+  neutral: "bg-surface-muted text-ink-muted",
+  success: "bg-success-soft text-success",
+  warning: "bg-warning-soft text-ink",
+  danger: "bg-danger-soft text-danger",
+};
+
+const sizes = {
+  sm: "px-2.5 py-0.5 text-xs",
+  md: "px-3 py-1 text-sm",
+};
+---
+
+<Tag
+  class={`inline-flex items-center gap-1.5 rounded-badge font-medium ${variants[variant]} ${sizes[size]} ${className}`}
+>
+  <slot />
+</Tag>

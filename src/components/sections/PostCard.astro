@@ -1,0 +1,54 @@
+---
+import Badge from "@components/ui/Badge.astro";
+import Card from "@components/ui/Card.astro";
+import { formatDate, type Post } from "@lib/blog";
+import { Image } from "astro:assets";
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const { title, description, pubDate, cover, coverAlt, tags, draft } = post.data;
+---
+
+<Card variant="elevated" href={`/blog/${post.id}`} class="flex flex-col gap-4 overflow-hidden p-0">
+  {
+    cover && (
+      <Image
+        src={cover}
+        alt={coverAlt ?? ""}
+        width={720}
+        height={405}
+        class="aspect-video w-full object-cover"
+        loading="lazy"
+      />
+    )
+  }
+
+  <div class="flex flex-1 flex-col gap-3 p-6">
+    <div class="flex flex-wrap items-center gap-2">
+      {
+        draft && (
+          <Badge variant="warning" size="sm">
+            Borrador
+          </Badge>
+        )
+      }
+      {
+        tags.slice(0, 2).map((tag) => (
+          <Badge variant="neutral" size="sm">
+            {tag}
+          </Badge>
+        ))
+      }
+    </div>
+
+    <h3 class="font-display text-h3 text-ink font-semibold">{title}</h3>
+    <p class="text-ink-muted flex-1">{description}</p>
+
+    <time datetime={pubDate.toISOString()} class="text-ink-subtle text-sm">
+      {formatDate(pubDate)}
+    </time>
+  </div>
+</Card>

@@ -1,0 +1,49 @@
+---
+/**
+ * Un CTA del registro, como botón.
+ *
+ *     <CtaButton id="empezar-reto" location="hero" />
+ *
+ * Envuelve el <Button> existente; no duplica estilos.
+ */
+import Button from "@components/ui/Button.astro";
+import { getCta } from "@config/ctas";
+
+interface Props {
+  id: string;
+  /** Desde qué parte de la página. Viaja al tracking para poder comparar. */
+  location?: string;
+  size?: "sm" | "md" | "lg";
+  /** Sobrescribe la variante del registro (ej. sobre fondo oscuro). */
+  variant?: "primary" | "secondary" | "outline" | "ghost";
+  /** Sobrescribe el texto. Úsalo poco: el punto del registro es no hacerlo. */
+  label?: string;
+  block?: boolean;
+  class?: string;
+}
+
+const {
+  id,
+  location = "",
+  size = "md",
+  variant,
+  label,
+  block,
+  class: className = "",
+} = Astro.props;
+
+const cta = getCta(id);
+---
+
+<Button
+  href={cta.href}
+  variant={variant ?? cta.variant ?? "primary"}
+  size={size}
+  block={block}
+  external={cta.external}
+  class={className}
+  data-cta={id}
+  data-cta-location={location}
+>
+  {label ?? cta.label}
+</Button>
