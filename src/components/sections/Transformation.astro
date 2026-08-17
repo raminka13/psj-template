@@ -1,0 +1,88 @@
+---
+/**
+ * ============================================================================
+ *  Transformation — el antes y el después, uno al lado del otro
+ * ============================================================================
+ *  Cubre a la vez el bloque *Value Proposition* de StoryBrand (los resultados)
+ *  y la T de PASTOR (la transformación). Se dibuja como contraste porque un
+ *  beneficio suelto no significa nada: "tienes un grupo" solo pesa cuando está
+ *  al lado de "lo intentas solo".
+ *
+ *  ── EL CONTRASTE LO DA EL TINTE, NO UNA BARRA ───────────────────────────
+ *  La columna del después va sobre `bg-primary-soft` con su borde tintado; la
+ *  del antes se queda en papel con texto en `ink-muted`. Es la misma mecánica
+ *  que usa la celda destacada de <RetoShowcase>: el fondo comunica "por aquí"
+ *  sin necesidad de una etiqueta que lo diga.
+ *
+ *  Nada de barra de acento lateral para marcar la columna buena: el detector la
+ *  marca como `side-tab` y DESIGN.md la prohíbe por nombre. (Y ojo: escribir
+ *  esa declaración CSS aquí, aunque sea para decir que no se usa, dispara la
+ *  regla igual — el detector lee el archivo, no la intención.)
+ *
+ *  ── MISMO NÚMERO DE FILAS EN AMBAS COLUMNAS ─────────────────────────────
+ *  Las dos listas se leen en paralelo, línea por línea: la primera del antes
+ *  contra la primera del después. Con distinto número de elementos ese
+ *  emparejamiento se rompe y el bloque pasa de ser una comparación a ser dos
+ *  listas sueltas. Si un lado tiene tres cosas, el otro tiene tres.
+ * ============================================================================
+ */
+import Reveal from "@components/ui/Reveal.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+
+export interface TransformationColumn {
+  /** Encabezado de la columna: "Hoy", "Después". Corto. */
+  label: string;
+  /** Una frase por fila. Se leen en paralelo con la otra columna. */
+  items: string[];
+}
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  before: TransformationColumn;
+  after: TransformationColumn;
+  background?: "default" | "muted" | "soft";
+  id?: string;
+}
+
+const { title, subtitle, before, after, background = "muted", id } = Astro.props;
+---
+
+<Section id={id} background={background}>
+  <Reveal>
+    <SectionHeading title={title} subtitle={subtitle} />
+  </Reveal>
+
+  <div class="mt-14 grid gap-6 md:grid-cols-2">
+    <Reveal>
+      <div class="border-line bg-surface rounded-card h-full border p-6 sm:p-8">
+        <h3 class="font-display text-ink-muted text-lg font-semibold">{before.label}</h3>
+        <ul class="mt-4">
+          {
+            before.items.map((item) => (
+              <li class="border-line text-ink-muted border-t py-3 first:border-t-0 first:pt-0">
+                {item}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </Reveal>
+
+    <Reveal delay={80}>
+      <div class="border-primary-muted bg-primary-soft rounded-card h-full border p-6 sm:p-8">
+        <h3 class="font-display text-ink text-lg font-semibold">{after.label}</h3>
+        <ul class="mt-4">
+          {
+            after.items.map((item) => (
+              <li class="border-primary-muted text-ink border-t py-3 first:border-t-0 first:pt-0">
+                {item}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </Reveal>
+  </div>
+</Section>

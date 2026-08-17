@@ -12,6 +12,17 @@ import Badge from "./Badge.astro";
 interface Props {
   /** Etiqueta pequeña arriba del título. */
   eyebrow?: string;
+  /**
+   * Título de la sección. Acepta HTML simple, y en concreto `<em>`: es la forma
+   * en que este sistema enfatiza dentro de un titular — itálica de la misma
+   * serif, nunca otro color ni un degradado (la Regla del Énfasis en Familia de
+   * DESIGN.md, y la razón de que Newsreader cargue su itálica).
+   *
+   * Antes se interpolaba tal cual y el `<em>` salía escapado: la home publicaba
+   * literalmente "El problema nunca fue &lt;em&gt;la falta de ganas&lt;/em&gt;".
+   * Los títulos son constantes del código y frontmatter validado por Zod, la
+   * misma procedencia que `subtitle`, que ya usaba set:html.
+   */
   title: string;
   /** Bajada bajo el título. Acepta HTML simple. */
   subtitle?: string;
@@ -51,7 +62,7 @@ const alignment = align === "center" ? "text-center mx-auto items-center" : "tex
 <div class={`flex flex-col gap-4 ${alignment} ${className}`}>
   {eyebrow && <Badge variant="primary">{eyebrow}</Badge>}
 
-  <Tag class={`font-display font-bold text-ink ${sizes[size]}`}>{title}</Tag>
+  <Tag class={`font-display font-bold text-ink ${sizes[size]}`} set:html={title} />
 
   {
     subtitle && (

@@ -13,6 +13,7 @@ commitment: "15 minutos al día y una sesión semanal"
 audience: "Para quien ya terminó un reto y no quiere soltarlo."
 order: 2
 featured: true
+theme: "masSabiduria"
 formId: "registro-whatsapp"
 testimonialKey: "mas-sabiduria"
 highlights:
@@ -22,6 +23,16 @@ highlights:
     description: "Un tema por mes, con material que se acumula y queda tuyo mientras estés dentro."
   - title: "Una comunidad que sí contesta"
     description: "El grupo tiene moderación real. Preguntas un martes y tienes respuesta antes del jueves."
+problem:
+  title: "El hábito está, pero se quedó en la superficie"
+  subtitle: "Lo que falta ya no es constancia. Es profundidad y con quién hablarla."
+  items:
+    - title: "Terminas el reto y no sabes qué sigue"
+      description: "La costumbre quedó, pero sin un tema nuevo se vuelve repetir cada mañana lo que ya sabías."
+    - title: "Las preguntas difíciles no tienen a dónde ir"
+      description: "En un grupo sin moderación se quedan sin responder, y en un buscador se responden mal."
+    - title: "La comunidad se apaga cuando cierra el grupo"
+      description: "El grupo del reto se disuelve al terminar el programa, y con él la razón por la que aparecías."
 includes:
   - "Sesión semanal en vivo, con grabación"
   - "Un módulo nuevo cada mes"

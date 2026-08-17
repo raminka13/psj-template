@@ -1,0 +1,71 @@
+---
+/**
+ * ============================================================================
+ *  Problem — el problema y lo que cuesta dejarlo como está
+ * ============================================================================
+ *  Es el bloque *Stakes* de StoryBrand y la P+A de PASTOR en una sola sección:
+ *  primero se nombra el problema (el titular) y después se amplifica diciendo
+ *  qué cuesta no resolverlo (la lista).
+ *
+ *  Va en columna estrecha (`measure`) y no en rejilla, y la razón es de
+ *  lectura: son frases largas que hay que leer seguidas, no datos que se
+ *  comparan entre sí. Repartidas en tres columnas el ojo salta entre ellas y
+ *  las lee como un menú de opciones — que es justo lo contrario de lo que son.
+ *
+ *  ── LO QUE NO LLEVA, A PROPÓSITO ────────────────────────────────────────
+ *  Sin iconos, sin numeración y sin tarjetas. Un coste no es un paso (no hay
+ *  orden), no es una feature (no es algo bueno) y no es una tarjeta (no se
+ *  elige). Además el cuadro de icono de 44px repetido es el patrón que el
+ *  detector marca como `icon-tile-stack`, y la barra de acento a la izquierda
+ *  es `side-tab`, el tell más reconocible de la interfaz generada.
+ *
+ *  El peso lo llevan el tamaño del título de cada coste y el filete que los
+ *  separa. Nada más hace falta.
+ * ============================================================================
+ */
+import Reveal from "@components/ui/Reveal.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+
+export interface Stake {
+  /** El coste, en una frase corta. Es lo que se lee primero. */
+  title: string;
+  /** Por qué duele. Una o dos líneas. */
+  description: string;
+}
+
+interface Props {
+  /** Acepta <em> para enfatizar en la misma familia tipográfica. */
+  title: string;
+  subtitle?: string;
+  items: Stake[];
+  background?: "default" | "muted" | "soft";
+  id?: string;
+}
+
+const { title, subtitle, items, background = "muted", id } = Astro.props;
+---
+
+<Section id={id} background={background}>
+  <Reveal>
+    <SectionHeading title={title} subtitle={subtitle} />
+  </Reveal>
+
+  {
+    /*
+      `border-b` en la lista y `border-t` en cada elemento: así el primero y el
+      último quedan cerrados sin que el último filete cuelgue. Es el mismo
+      mecanismo que las reglas de /acerca.
+    */
+  }
+  <ul class="border-line measure mt-12 border-b">
+    {
+      items.map((item, index) => (
+        <Reveal as="li" delay={index * 60} class="border-line flex flex-col gap-2 border-t py-6">
+          <h3 class="font-display text-h3 text-ink font-semibold">{item.title}</h3>
+          <p class="text-ink-muted">{item.description}</p>
+        </Reveal>
+      ))
+    }
+  </ul>
+</Section>

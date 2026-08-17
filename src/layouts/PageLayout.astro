@@ -27,6 +27,8 @@ import type { SeoProps } from "@lib/seo";
 interface Props {
   seo?: SeoProps;
   theme?: ThemeOverrides;
+  /** Overrides solo para modo oscuro. Ver la nota en ThemeVars.astro. */
+  themeDark?: ThemeOverrides;
   pageType?: "WebPage" | "CollectionPage" | "ItemPage" | "AboutPage" | "ContactPage";
   schemaExtra?: SchemaNode[];
   /** Oculta el header, por ejemplo en una landing de un solo objetivo. */
@@ -34,10 +36,24 @@ interface Props {
   hideFooter?: boolean;
 }
 
-const { seo, theme, pageType, schemaExtra, hideHeader = false, hideFooter = false } = Astro.props;
+const {
+  seo,
+  theme,
+  themeDark,
+  pageType,
+  schemaExtra,
+  hideHeader = false,
+  hideFooter = false,
+} = Astro.props;
 ---
 
-<BaseLayout seo={seo} theme={theme} pageType={pageType} schemaExtra={schemaExtra}>
+<BaseLayout
+  seo={seo}
+  theme={theme}
+  themeDark={themeDark}
+  pageType={pageType}
+  schemaExtra={schemaExtra}
+>
   {!hideHeader && <Header />}
 
   {/* id="main" es el destino del enlace "Saltar al contenido" de BaseLayout. */}

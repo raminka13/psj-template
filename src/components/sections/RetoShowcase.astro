@@ -43,6 +43,13 @@ export interface RetoCard {
   icon?: string;
   duration?: string;
   commitment?: string;
+  /**
+   * Para quién es, en una frase. Es el dato que de verdad resuelve la elección
+   * cuando hay varios programas y ninguno es el obvio: "21 días" describe el
+   * formato, "para quien lleva meses con una idea sin arrancar" describe a la
+   * persona, y es en esa segunda frase donde alguien se reconoce.
+   */
+  audience?: string;
   cover?: ImageMetadata;
   coverAlt?: string;
 }
@@ -86,7 +93,7 @@ const featuredMeta = [featured?.duration, featured?.commitment].filter(Boolean).
         <Reveal class="lg:col-span-7">
           <a
             href={featured.href}
-            class="bg-primary-soft border-primary-muted rounded-card group flex h-full flex-col gap-5 border p-6 transition-colors duration-150 ease-out-soft hover:border-primary sm:p-8"
+            class="bg-primary-soft border-primary-muted rounded-card group ease-out-soft hover:border-primary flex h-full flex-col gap-5 border p-6 transition-colors duration-150 sm:p-8"
           >
             {featured.cover ? (
               <Image
@@ -113,10 +120,17 @@ const featuredMeta = [featured?.duration, featured?.commitment].filter(Boolean).
               <p class="text-ink-muted max-w-[52ch]">{featured.description}</p>
             </div>
 
-            {featuredMeta && (
-              <p class="border-primary-muted text-ink-subtle mt-auto border-t pt-4 text-sm">
-                {featuredMeta}
-              </p>
+            {/*
+              `audience` va en su PROPIA línea y no encadenado a la tira de
+              arriba. Duración y compromiso son dos datos del mismo tipo y
+              admiten un punto medio entre ellos; sumarle "para quién es" haría
+              una tira de tres que ya no se lee como dato, sino como adorno.
+            */}
+            {(featured.audience || featuredMeta) && (
+              <div class="border-primary-muted mt-auto flex flex-col gap-1 border-t pt-4">
+                {featured.audience && <p class="text-ink-muted text-sm">{featured.audience}</p>}
+                {featuredMeta && <p class="text-ink-subtle text-sm">{featuredMeta}</p>}
+              </div>
             )}
           </a>
         </Reveal>
@@ -160,6 +174,7 @@ const featuredMeta = [featured?.duration, featured?.commitment].filter(Boolean).
                       {item.title}
                     </span>
                     <span class="text-ink-muted text-sm">{item.tagline}</span>
+                    {item.audience && <span class="text-ink-subtle text-sm">{item.audience}</span>}
                   </span>
                 </a>
               </li>

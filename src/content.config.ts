@@ -10,6 +10,19 @@
 
 import { defineCollection, z } from "astro:content";
 import { file, glob } from "astro/loaders";
+import { themePresets, type ThemePresetName } from "./config/theme";
+
+/**
+ * Los nombres de preset se derivan del propio registro en vez de escribirse a
+ * mano: añadir un preset a src/config/theme.ts lo habilita en el frontmatter
+ * sin tocar este archivo, y borrar uno rompe el build de los retos que lo
+ * usaban en vez de dejarlos apuntando a un tema que ya no existe.
+ *
+ * Import relativo y no por alias: el content config lo carga el content layer
+ * de Astro en su propio contexto, donde la resolución de alias no está
+ * garantizada.
+ */
+const THEME_PRESET_NAMES = Object.keys(themePresets) as [ThemePresetName, ...ThemePresetName[]];
 
 /** Reutilizable: una FAQ dentro del frontmatter de un post. */
 const faqSchema = z.object({
@@ -135,6 +148,29 @@ const retos = defineCollection({
         .min(1)
         .max(4),
 
+      /**
+       * El problema que este reto resuelve y lo que cuesta no resolverlo.
+       * Alimenta <Problem> en la página del reto.
+       *
+       * Es OPCIONAL a propósito: un reto sin `problem` simplemente no dibuja
+       * esa sección, y la página sigue siendo válida. Hacerlo obligatorio
+       * habría roto el build de cualquier reto ya escrito, que es exactamente
+       * el tipo de fricción que hace que la gente deje de añadir retos.
+       *
+       * Tope de 3: son frases largas que se leen seguidas, y a partir de la
+       * cuarta el bloque deja de ser un argumento y pasa a ser una queja.
+       */
+      problem: z
+        .object({
+          title: z.string(),
+          subtitle: z.string().optional(),
+          items: z
+            .array(z.object({ title: z.string(), description: z.string() }))
+            .min(1)
+            .max(3),
+        })
+        .optional(),
+
       /** Lo que incluye, en frases sueltas. */
       includes: z.array(z.string()).default([]),
 
@@ -148,6 +184,18 @@ const retos = defineCollection({
 
       cover: image().optional(),
       coverAlt: z.string().optional(),
+
+      /**
+       * Preset visual de la página del reto (src/config/theme.ts).
+       *
+       * Es lo que hace que tres retos no se sientan la misma página: cambia el
+       * acento y toda la escala de radios de una vez. NO añade un color más a
+       * la vista — cambia CUÁL es el acento único, que es lo que permite la
+       * Regla del Acento Único de DESIGN.md.
+       *
+       * Sin declararlo, la página usa la identidad de PSJ (`psj`).
+       */
+      theme: z.enum(THEME_PRESET_NAMES).optional(),
 
       /** Orden en el menú, el índice y la home. */
       order: z.number(),

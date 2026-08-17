@@ -1,21 +1,53 @@
 ---
 /**
- * Emite las variables CSS de un override de tema sobre :root.
- *
- * Va dentro del <head>, después de la hoja global, para que gane por orden
- * de cascada sin necesidad de !important.
+ * Emite las variables CSS de un override de tema.
  *
  * Solo se emiten las variables que realmente se pasaron: las demás siguen
  * tomando su valor de tokens.css.
+ *
+ * ── POR QUÉ LOS SELECTORES VAN DUPLICADOS ─────────────────────────────────
+ * Este componente NO puede confiar en el orden de la cascada. Astro inyecta la
+ * hoja global (`<link rel="stylesheet">`) DESPUÉS de los `<style is:inline>`
+ * de los componentes del <head>, así que un `:root{…}` de aquí pierde contra el
+ * `:root{…}` de tokens.css por ir antes, no por especificidad.
+ *
+ * No es teoría: hasta que se conectó el primer preset a una página, el prop
+ * `theme` no tenía ningún efecto en modo claro. Pasaba desapercibido porque
+ * ninguna página lo usaba, y porque el bloque oscuro sí funcionaba — por
+ * casualidad, al llevar un selector más específico.
+ *
+ * La solución es especificidad, que no depende del orden:
+ *
+ *     :root:root                       (0,2,0)  gana a :root de tokens.css
+ *     :root:root[data-theme="dark"]    (0,3,0)  gana también al bloque claro
+ *
+ * El escalón entre los dos es lo que permite que el modo oscuro sobrescriba al
+ * claro dentro de este mismo <style>, sin importar cuál se escriba primero.
+ *
+ * ── EL CASO DE UN TEMA SIN VARIANTE OSCURA ────────────────────────────────
+ * Un `theme={{ primary: "…" }}` sin `themeDark` pinta ese color en los DOS
+ * modos: al ser (0,2,0) también le gana al `[data-theme="dark"]` (0,1,0) de
+ * tokens.css. Para una landing de funnel con marca propia suele ser lo que se
+ * quiere; si no lo es, pasa `themeDark` — y si tocas un color, mide el
+ * contraste sobre el fondo oscuro antes de darlo por bueno.
  */
 import { themeToStyle, type ThemeOverrides } from "@config/theme";
 
 interface Props {
+  /** Valores de modo claro (y los que no dependen del modo: radios, ritmo). */
   theme?: ThemeOverrides;
+  /** Valores que solo aplican con `data-theme="dark"`. */
+  themeDark?: ThemeOverrides;
 }
 
-const { theme } = Astro.props;
-const declarations = themeToStyle(theme);
+const { theme, themeDark } = Astro.props;
+
+const light = themeToStyle(theme);
+const dark = themeToStyle(themeDark);
+
+const css = [light && `:root:root{${light}}`, dark && `:root:root[data-theme="dark"]{${dark}}`]
+  .filter(Boolean)
+  .join("");
 ---
 
-{declarations && <style is:inline set:html={`:root{${declarations}}`} />}
+{css && <style is:inline set:html={css} />}

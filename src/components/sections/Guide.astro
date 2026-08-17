@@ -1,0 +1,71 @@
+---
+/**
+ * ============================================================================
+ *  Guide — quién acompaña, y por qué se le puede creer
+ * ============================================================================
+ *  El bloque *Guide* de StoryBrand y la S (story) de PASTOR. Su trabajo es
+ *  doble y en este orden: empatía primero ("entendemos lo que te pasa") y
+ *  autoridad después ("y sabemos resolverlo"). Invertido suena a currículum.
+ *
+ *  ── POR QUÉ NO LLEVA CIFRAS ─────────────────────────────────────────────
+ *  La tentación es rellenar esta sección con números de autoridad. No: en esta
+ *  página las cifras ya las lleva <TrustStrip> justo debajo del hero, y
+ *  repetirlas aquí las gasta. La autoridad de este bloque es de otro tipo — es
+ *  decir con precisión qué se hace y qué no se hace, que es lo que de verdad
+ *  distingue a una guía de un catálogo.
+ *
+ *  ── LA MAQUETA ──────────────────────────────────────────────────────────
+ *  Dos columnas asimétricas: la tesis a la izquierda en tamaño de titular, el
+ *  desarrollo a la derecha en columna de lectura. No es un párrafo centrado a
+ *  todo lo ancho porque son ~150 palabras: a 68ch (lo que aplica <Prose> solo)
+ *  se leen en líneas cómodas, y a todo lo ancho el ojo pierde el renglón al
+ *  volver.
+ * ============================================================================
+ */
+import Prose from "@components/ui/Prose.astro";
+import Reveal from "@components/ui/Reveal.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  /** Un string por párrafo. Acepta HTML simple (<em>, <strong>, <a>). */
+  body: string[];
+  /** Enlace de continuación al final del texto, normalmente a /acerca. */
+  link?: { label: string; href: string };
+  background?: "default" | "muted" | "soft";
+  id?: string;
+}
+
+const { title, subtitle, body, link, background = "default", id } = Astro.props;
+---
+
+<Section id={id} background={background}>
+  <div class="grid gap-x-12 gap-y-8 lg:grid-cols-12">
+    <Reveal class="lg:col-span-5">
+      <SectionHeading title={title} subtitle={subtitle} />
+    </Reveal>
+
+    <Reveal class="lg:col-span-6 lg:col-start-7" delay={80}>
+      <Prose>
+        {body.map((paragraph) => <p set:html={paragraph} />)}
+
+        {
+          /*
+            El enlace va dentro de <Prose> y no como <Button>: es continuación
+            de lectura, no una acción. Un botón aquí competiría con el CTA real
+            de la página y multiplicaría los destinos de una misma intención.
+          */
+        }
+        {
+          link && (
+            <p>
+              <a href={link.href}>{link.label}</a>
+            </p>
+          )
+        }
+      </Prose>
+    </Reveal>
+  </div>
+</Section>

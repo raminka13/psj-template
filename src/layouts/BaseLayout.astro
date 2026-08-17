@@ -25,13 +25,19 @@ interface Props {
   seo?: SeoProps;
   /** Sobrescribe tokens solo en esta página. Ver src/config/theme.ts. */
   theme?: ThemeOverrides;
+  /**
+   * Overrides que solo aplican en modo oscuro. Necesario cuando `theme` cambia
+   * un color: sin esto el valor claro se impone también en oscuro. La
+   * explicación completa está en ThemeVars.astro.
+   */
+  themeDark?: ThemeOverrides;
   pageType?: "WebPage" | "CollectionPage" | "ItemPage" | "AboutPage" | "ContactPage";
   schemaExtra?: SchemaNode[];
   /** Clases extra para <body>. */
   bodyClass?: string;
 }
 
-const { seo = {}, theme, pageType, schemaExtra, bodyClass = "" } = Astro.props;
+const { seo = {}, theme, themeDark, pageType, schemaExtra, bodyClass = "" } = Astro.props;
 ---
 
 <!doctype html>
@@ -48,7 +54,7 @@ const { seo = {}, theme, pageType, schemaExtra, bodyClass = "" } = Astro.props;
     <Font cssVariable="--font-heading" preload />
 
     <Seo {...seo} pageType={pageType} schemaExtra={schemaExtra} themeColor={theme?.primary} />
-    <ThemeVars theme={theme} />
+    <ThemeVars theme={theme} themeDark={themeDark} />
 
     <ClientRouter />
 

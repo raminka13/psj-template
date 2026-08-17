@@ -1,27 +1,65 @@
 ---
 /**
  * ============================================================================
- *  Página individual de un reto
+ *  Página individual de un reto — página de producto, no de marca
  * ============================================================================
- *  Se genera una por cada archivo de src/content/retos/. Todo el contenido
- *  sale del frontmatter: el copy, las FAQs, qué formulario usa y qué
- *  testimonios muestra. Añadir un reto es añadir un .md, sin tocar esta
- *  página ni el menú ni el footer.
+ *  Se genera una por cada archivo de src/content/retos/. Todo el contenido sale
+ *  del frontmatter: el copy, el problema, las FAQs, qué formulario usa, qué
+ *  testimonios muestra y con qué tema se pinta. Añadir un reto es añadir un
+ *  .md, sin tocar esta página ni el menú ni el footer.
  *
- *  Reutiliza las secciones que ya existen (Hero, Steps, Testimonials,
- *  FaqSection, Form, CtaBanner) en vez de inventar maqueta nueva.
+ *  ── EN QUÉ SE DIFERENCIA DE LA HOME, Y POR QUÉ ──────────────────────────
+ *  Antes esta página y la home compartían hero, Steps, Testimonials,
+ *  formulario, FAQ y CtaBanner casi en el mismo orden: se leían como la misma
+ *  página con otro texto. Ahora se separan por tres ejes a la vez, porque uno
+ *  solo no alcanza — cambiar solo el color deja la misma silueta, y cambiar
+ *  solo el orden deja la misma sensación.
+ *
+ *  1. ESTRUCTURA. La home hace el arco de marca (confianza → problema → guía →
+ *     plan → oferta → transformación → prueba). Aquí el arco es de venta
+ *     directa: los datos duros primero, el problema del reto concreto, el
+ *     cuerpo del producto con lo que incluye, y el CTA siempre a mano. No
+ *     aparecen <TrustStrip>, <Guide>, <Transformation> ni <RetoShowcase>; sí
+ *     aparecen la franja de datos y el cuerpo con aside, que la home no tiene.
+ *
+ *  2. COLOR. `theme` del frontmatter elige un preset de src/config/theme.ts.
+ *     No añade un color más a la vista: cambia CUÁL es el acento único, que es
+ *     lo que permite la Regla del Acento Único de DESIGN.md. Cada preset lleva
+ *     su variante de modo oscuro — sin ella el valor claro se impondría también
+ *     en oscuro (ver la nota de cascada en ThemeVars.astro).
+ *
+ *  3. DENSIDAD. `sectionY` se aprieta respecto a la home. La home respira
+ *     porque es editorial y se hojea; esta página se lee para decidir, y el
+ *     aire de más aquí solo aleja el botón. Es UN token, no clases sueltas por
+ *     sección: la regla de oro sigue siendo que nadie escriba espaciado a mano.
+ *
+ *  ── CUENTAS DE COMPOSICIÓN ───────────────────────────────────────────────
+ *    Secciones ....................... 9  (8 si el reto no declara `problem`)
+ *    Eyebrows ........................ 0  (tope: ceil(9/3) = 3)
+ *    Familias de layout .............. 9  (mínimo: 4)
+ *    Misma familia seguida ........... 1  (tope: 2)
+ *    Acentos de marca por vista ...... 1  (el primary del preset)
+ *
+ *  Antes había 3 eyebrows (el tagline del hero, "Testimonios" y "Preguntas")
+ *  con un tope de 2: la página incumplía su propia regla. Los tres se
+ *  borraron, no se reemplazaron. El tagline no se perdió — sigue en el menú,
+ *  en las tarjetas del índice y en el <title>.
  * ============================================================================
  */
 import CtaBanner from "@components/cta/CtaBanner.astro";
+import CtaSticky from "@components/cta/CtaSticky.astro";
 import Form from "@components/forms/Form.astro";
 import FaqSection from "@components/sections/FaqSection.astro";
 import Hero from "@components/sections/Hero.astro";
+import Problem from "@components/sections/Problem.astro";
 import Steps from "@components/sections/Steps.astro";
 import Testimonials from "@components/sections/Testimonials.astro";
 import Container from "@components/ui/Container.astro";
 import Prose from "@components/ui/Prose.astro";
+import Reveal from "@components/ui/Reveal.astro";
 import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
+import { themePresets } from "@config/theme";
 import PageLayout from "@layouts/PageLayout.astro";
 import { getFaqs, getRetos, getTestimonios, type Reto } from "@lib/content";
 import { course } from "@lib/schema";
@@ -51,18 +89,47 @@ const testimonios = await getTestimonios({
   limit: 3,
 });
 
-// Sin `offer`: los retos del template no declaran precio y no se inventa uno.
-// Poner una cifra falsa en el schema es declarar un dato falso a Google.
+/**
+ * El ritmo vertical de una página de reto.
+ *
+ * Más apretado que el de la home (`clamp(3.5rem, 2rem + 6vw, 6rem)` en
+ * tokens.css) y con la misma forma fluida, así que sigue creciendo con el
+ * viewport sin media queries y sigue siendo razonable en un teléfono.
+ */
+const RITMO_DE_RETO = "clamp(2.75rem, 1.75rem + 4vw, 4.5rem)";
+
+/**
+ * El preset del reto, con el ritmo mezclado en el bloque claro: `sectionY` no
+ * depende del modo, así que declararlo también en `dark` sería repetirlo.
+ */
+const preset = themePresets[d.theme ?? "psj"];
+const tema = { ...preset.light, sectionY: RITMO_DE_RETO };
+
+/**
+ * Schema del curso.
+ *
+ * Sin `offer`: los retos del template no declaran precio y no se inventa uno.
+ * Poner una cifra falsa en el schema es declarar un dato falso a Google.
+ *
+ * Y sin `workload` por la misma razón. Antes estaba fijo en "PT15M" para los
+ * tres retos, pero solo el Reto de Sabiduría se dedica en minutos diarios:
+ * "Emprende con Propósito" pide una tarea por semana y "Más Sabiduría" una
+ * sesión semanal. Era un dato falso declarado en dos de cada tres páginas.
+ * `commitment` es texto libre ("Una tarea por semana y una sesión de grupo"),
+ * así que no se puede convertir a una duración ISO sin adivinar — y adivinar
+ * aquí es justo lo que no se hace.
+ */
 const schemaCurso = course({
   name: d.title,
   description: d.description,
   url: `/retos/${reto.id}`,
-  workload: "PT15M",
 });
 ---
 
 <PageLayout
   pageType="ItemPage"
+  theme={tema}
+  themeDark={preset.dark}
   schemaExtra={[schemaCurso]}
   seo={{
     title: d.title,
@@ -77,15 +144,31 @@ const schemaCurso = course({
     ],
   }}
 >
+  {
+    /*
+    1 · HERO. Sin eyebrow: el tagline que iba ahí ya está en el menú, en la
+    tarjeta del índice y en el <title>, y encima del nombre del reto solo
+    repetía la categoría.
+  */
+  }
   <Hero
-    eyebrow={d.tagline}
     title={d.title}
     subtitle={d.promise}
     primaryCta={{ label: "Empezar el reto", href: "#registro" }}
     secondaryCta={{ label: "Ver todos los retos", href: "/retos" }}
   />
 
-  {/* Datos de un vistazo. Franja propia, fuera del hero. */}
+  {
+    /*
+    2 · DATOS DE UN VISTAZO. Franja propia, fuera del hero: duración,
+    dedicación y para quién son tres razones para seguir leyendo, y metidas en
+    el hero lo convertirían en un resumen en vez de un mensaje.
+
+    Es la familia de layout que la home no tiene, y va arriba a propósito:
+    quien llega aquí desde el índice ya decidió que le interesa y lo primero
+    que quiere saber es si le cabe.
+  */
+  }
   <Container>
     <dl class="border-line grid gap-4 border-y py-4 text-sm sm:grid-cols-3 sm:gap-8">
       {
@@ -106,15 +189,29 @@ const schemaCurso = course({
     </dl>
   </Container>
 
-  {/* Lo que se lleva: secuencia, porque tiene orden de importancia. */}
-  <Steps
-    id="que-incluye"
-    title="Cómo funciona por dentro"
-    items={d.highlights}
-    background="muted"
-  />
+  {
+    /*
+    3 · EL PROBLEMA DE ESTE RETO. Mismo componente que la home, otro contenido:
+    allí el problema es de marca ("nadie abandona por falta de ganas"), aquí es
+    el de este programa concreto.
 
-  {/* Cuerpo del markdown + lista de lo que incluye, en dos columnas. */}
+    Opcional: un reto sin `problem` en el frontmatter simplemente no dibuja la
+    sección y la página sigue siendo válida.
+  */
+  }
+  {
+    d.problem && (
+      <Problem
+        id="el-problema"
+        title={d.problem.title}
+        subtitle={d.problem.subtitle}
+        items={d.problem.items}
+        background="muted"
+      />
+    )
+  }
+
+  {/* 4 · CUERPO DEL MARKDOWN + LO QUE INCLUYE, en dos columnas. */}
   <Section>
     <div class="grid gap-x-12 gap-y-10 lg:grid-cols-12">
       <div class="lg:col-span-7">
@@ -141,37 +238,58 @@ const schemaCurso = course({
     </div>
   </Section>
 
+  {/* 5 · CÓMO FUNCIONA POR DENTRO. Secuencia: tiene orden de importancia. */}
+  <Steps
+    id="que-incluye"
+    title="Cómo funciona por dentro"
+    items={d.highlights}
+    background="muted"
+  />
+
   {
     testimonios.length > 0 && (
       <Testimonials
         id="testimonios"
-        eyebrow="Testimonios"
         title="Lo que dicen quienes ya lo hicieron"
         items={testimonios}
+        background="default"
       />
     )
   }
 
+  {
+    /*
+    7 · REGISTRO. Va con <Reveal> como en el resto del sitio: antes esta página
+    era la única que lo omitía aquí, así que el bloque aparecía de golpe
+    mientras las secciones de arriba entraban escalonadas.
+  */
+  }
   <Section id="registro" background="muted">
     <div class="grid items-start gap-x-12 gap-y-10 lg:grid-cols-12">
-      <div class="lg:col-span-5">
+      <Reveal class="lg:col-span-5">
         <SectionHeading
           title={`Empieza ${d.title}`}
           subtitle="Déjanos tus datos y te mandamos el acceso con todos los detalles."
         />
-      </div>
-      <div class="lg:col-span-6 lg:col-start-7">
+      </Reveal>
+      <Reveal class="lg:col-span-6 lg:col-start-7" delay={80}>
         <Form id={d.formId} location={`reto-${reto.id}`} />
-      </div>
+      </Reveal>
     </div>
   </Section>
 
-  <FaqSection
-    eyebrow="Preguntas"
-    title="Lo que más nos preguntan"
-    items={faqs}
-    background="default"
-  />
+  <FaqSection title="Lo que más nos preguntan" items={faqs} background="default" />
 
   <CtaBanner id="empezar-reto" anchorId="cta-final" location={`reto-${reto.id}`} />
+
+  {
+    /*
+    9 · STICKY MÓVIL. La home lo tiene y esta página no lo tenía, que era al
+    revés de lo que pide cada una: la home se hojea, pero aquí alguien ya está
+    decidiendo y el botón tiene que seguir a mano mientras lee el cuerpo, las
+    inclusiones y las FAQ. Se esconde cuando el CTA de cierre está a la vista
+    para no mostrar el mismo botón dos veces.
+  */
+  }
+  <CtaSticky id="empezar-reto" hideNear="#cta-final" showAfter={700} location={`reto-${reto.id}`} />
 </PageLayout>

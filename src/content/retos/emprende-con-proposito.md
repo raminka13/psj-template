@@ -13,6 +13,7 @@ commitment: "Una tarea por semana y una sesión de grupo"
 audience: "Para quien lleva meses con una idea sin arrancar."
 order: 3
 featured: true
+theme: "emprende"
 formId: "registro-whatsapp"
 testimonialKey: "emprende"
 highlights:
@@ -22,6 +23,16 @@ highlights:
     description: "Revisión honesta de tu idea. Si no se sostiene, te lo decimos en la semana dos y no en el mes seis."
   - title: "Fechas reales"
     description: "El calendario es del grupo, no tuyo. Es lo que hace que la idea deje de posponerse."
+problem:
+  title: "La idea lleva meses dando vueltas"
+  subtitle: "No le falta potencial. Le falta una fecha y alguien que la mire de verdad."
+  items:
+    - title: "Se posterga porque nadie la espera"
+      description: "Sin una entrega con fecha, la idea siempre le cede el turno a lo urgente de esta semana."
+    - title: "Nadie te ha dicho la verdad todavía"
+      description: "Tu círculo cercano te dice que suena bien. Se agradece, pero no te dice si se sostiene."
+    - title: "Confundes avanzar con acumular apuntes"
+      description: "Cursos, notas, planes. Todo se siente productivo y nada de eso existe aún fuera de tu cabeza."
 includes:
   - "8 módulos con una entrega cada uno"
   - "Revisión de tu proyecto en grupo"

@@ -13,6 +13,7 @@ commitment: "15 minutos al día"
 audience: "Para quien quiere empezar y no sabe por dónde."
 order: 1
 featured: true
+theme: "retoSabiduria"
 formId: "optin-reto"
 testimonialKey: "reto-sabiduria"
 highlights:
@@ -22,6 +23,16 @@ highlights:
     description: "Todos empiezan el mismo lunes. Cuando faltas, alguien lo nota y te escribe."
   - title: "Sesiones en vivo cada semana"
     description: "Tres encuentros para preguntar lo que se atoró. Quedan grabados por si no alcanzas."
+problem:
+  title: "Las mañanas se van sin que decidas nada"
+  subtitle: "Y a media tarde ya no te acuerdas con qué intención empezaste."
+  items:
+    - title: "Empiezas el día reaccionando"
+      description: "El teléfono decide lo primero que piensas, y de ahí en adelante el día lo lleva cualquier cosa menos tú."
+    - title: "Ya lo intentaste y no aguantó"
+      description: "Un plan de lectura, una aplicación, un cuaderno nuevo en enero. Ninguno pasó de la segunda semana."
+    - title: "Leer a solas no construye el hábito"
+      description: "Sin nadie que note que hoy no apareciste, el día que se rompe la racha no hay nada que la reanude."
 includes:
   - "21 lecciones diarias en audio y texto"
   - "Cuaderno de trabajo descargable"
