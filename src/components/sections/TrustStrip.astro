@@ -1,0 +1,56 @@
+---
+/**
+ * ============================================================================
+ *  TrustStrip — la prueba social, DEBAJO del hero
+ * ============================================================================
+ *  Existe para que el hero no la lleve dentro. Cifra de alumnos, garantía y
+ *  condiciones son tres razones para confiar, y el hero es un mensaje: metidas
+ *  ahí lo convierten en un resumen de la página y empujan el botón hacia abajo.
+ *  Aquí tienen sitio propio y no le quitan nada al titular.
+ *
+ *  Antes esto era un párrafo con las tres cosas separadas por puntos medios.
+ *  Dos cambios:
+ *
+ *  1. FUERA LOS PUNTOS MEDIOS. Tres datos con dos `·` en la misma línea dejan
+ *     de leerse como datos y se leen como adorno. Ahora los separa un filete,
+ *     que es lo que de verdad separa columnas.
+ *
+ *  2. TRES CELDAS, NO UNA LÍNEA QUE SE PARTE. El párrafo con flex-wrap se
+ *     rompía donde cayera en móvil, así que a 375px podía quedar un dato
+ *     colgando solo. En rejilla, cada dato es una fila entera y siempre cae
+ *     igual.
+ * ============================================================================
+ */
+import Container from "@components/ui/Container.astro";
+
+export interface TrustItem {
+  /** El dato que se lee primero. Corto: es lo único que va en negrita. */
+  value: string;
+  /** Qué significa el dato. Una línea. */
+  label: string;
+}
+
+interface Props {
+  items: TrustItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<Container>
+  <ul
+    class="border-line grid grid-cols-1 border-y sm:grid-cols-3"
+    aria-label="Datos del programa"
+  >
+    {
+      items.map((item) => (
+        <li
+          class="border-line flex flex-col gap-0.5 border-t py-4 first:border-t-0 sm:border-t-0 sm:border-l sm:px-6 sm:py-5 sm:first:border-l-0 sm:first:pl-0"
+        >
+          <span class="text-ink font-semibold">{item.value}</span>
+          <span class="text-ink-muted text-sm">{item.label}</span>
+        </li>
+      ))
+    }
+  </ul>
+</Container>

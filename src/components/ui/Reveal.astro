@@ -1,0 +1,138 @@
+---
+/**
+ * ============================================================================
+ *  Reveal — entrada al asomarse al viewport
+ * ============================================================================
+ *  Envuelve un bloque y lo hace aparecer cuando entra en pantalla. Sirve para
+ *  una cosa concreta: dar orden de lectura. En una página larga, que el
+ *  titular de la sección llegue un instante antes que su contenido indica por
+ *  dónde empezar. No es decoración: si no aporta jerarquía o secuencia, no lo
+ *  uses.
+ *
+ *  ── TRES DECISIONES QUE NO CONVIENE DESHACER ────────────────────────────
+ *
+ *  1. SIN JAVASCRIPT NO SE ESCONDE NADA. El estado inicial (opacity 0) solo
+ *     aplica bajo `html[data-reveal-ready]`, y ese atributo lo pone el script.
+ *     Si el JS no carga, falla o va bloqueado, la página se ve completa. El
+ *     patrón contrario — ocultar en CSS y revelar con JS — deja la página en
+ *     blanco cuando el script no llega, y es el bug más caro de este efecto.
+ *
+ *  2. IntersectionObserver, NUNCA un listener de scroll. Un handler de scroll
+ *     corre en cada frame y no se agrupa; el observer lo resuelve el navegador
+ *     fuera del hilo principal y además deja de observar lo ya revelado.
+ *
+ *  3. CON prefers-reduced-motion NO SE ACTIVA. El script sale antes de poner
+ *     el atributo, así que no hay estado oculto ni transición que anular. Es
+ *     más seguro que dejar que global.css aplaste la duración: si un elemento
+ *     nunca llegara a intersectar, con el otro camino se quedaría invisible.
+ *
+ *  Solo se animan opacity y transform: ambas van por GPU y no reflotan layout.
+ * ============================================================================
+ */
+import type { HTMLTag } from "astro/types";
+
+interface Props {
+  as?: HTMLTag;
+  /**
+   * Retraso en ms para escalonar hermanos. Úsalo en pasos cortos (60-80ms):
+   * escalonar de 200 en 200 no se lee como secuencia, se lee como lentitud.
+   */
+  delay?: number;
+  class?: string;
+}
+
+// Ver la nota sobre `: Props` en Container.astro: con una etiqueta dinámica
+// Astro deja de inferir Astro.props y todo se vuelve any en silencio.
+const { as: Tag = "div", delay = 0, class: className = "" }: Props = Astro.props;
+---
+
+<Tag
+  data-reveal
+  class={className}
+  style={delay ? `--reveal-delay: ${delay}ms` : undefined}
+>
+  <slot />
+</Tag>
+
+{/*
+  is:global a propósito: los selectores tienen que alcanzar <html> y a los
+  descendientes marcados con data-reveal. El scoping de Astro inyecta un
+  :where(.astro-xxxx) que rompería justo esa relación.
+
+  Astro agrupa este <style> y este <script> una sola vez por página aunque el
+  componente se use veinte veces.
+*/}
+<style is:global>
+  html[data-reveal-ready] [data-reveal] {
+    opacity: 0;
+    /* 12px, no 40: un recorrido corto se lee como "el contenido llegó"; uno
+     * largo se lee como "la página va lenta". */
+    transform: translateY(12px);
+  }
+
+  html[data-reveal-ready] [data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+    /* 500ms: es contenido que entra y se ve una vez, no respuesta a un clic,
+     * así que no le aplica el tope de 300ms de la interfaz. */
+    transition:
+      opacity 500ms var(--ease-out-soft) var(--reveal-delay, 0ms),
+      transform 500ms var(--ease-out-soft) var(--reveal-delay, 0ms);
+  }
+
+  /* Red de seguridad: si algún día el script pusiera el atributo pese a la
+   * preferencia, aquí nada queda oculto. */
+  @media (prefers-reduced-motion: reduce) {
+    html[data-reveal-ready] [data-reveal] {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  let observer: IntersectionObserver | undefined;
+
+  function setupReveal() {
+    // Se sale ANTES de marcar el documento: sin el atributo, el CSS de arriba
+    // no aplica y no hay nada oculto que rescatar.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!("IntersectionObserver" in window)) return;
+
+    document.documentElement.dataset.revealReady = "";
+
+    // El observer anterior apuntaba a nodos que ya no están en el documento.
+    observer?.disconnect();
+
+    observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add("is-visible");
+          // Una vez revelado no hace falta seguir observándolo, y así el
+          // bloque no vuelve a desaparecer al scrollear hacia arriba.
+          observer?.unobserve(entry.target);
+        }
+      },
+      // El margen negativo abajo espera a que el bloque esté claramente
+      // dentro: revelar en el píxel exacto del borde se ve como un parpadeo.
+      { rootMargin: "0px 0px -10% 0px", threshold: 0.15 },
+    );
+
+    for (const element of document.querySelectorAll("[data-reveal]")) {
+      observer.observe(element);
+    }
+  }
+
+  /**
+   * `astro:page-load` y NO un bloque suelto, porque BaseLayout monta
+   * <ClientRouter />. Con navegación en cliente el <body> se reemplaza, así que
+   * un script que corre una sola vez dejaría los [data-reveal] nuevos sin
+   * observador MIENTRAS data-reveal-ready sigue puesto en <html>: resultado,
+   * contenido invisible para siempre al volver a esta página desde el blog.
+   *
+   * El evento también dispara en la carga inicial, así que no hace falta
+   * llamarlo aparte. Es el mismo patrón que usa Header.astro para el submenú.
+   */
+  document.addEventListener("astro:page-load", setupReveal);
+</script>

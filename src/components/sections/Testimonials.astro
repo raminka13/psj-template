@@ -13,6 +13,7 @@
  *  clases no hace.
  * ============================================================================
  */
+import Reveal from "@components/ui/Reveal.astro";
 import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 
@@ -50,13 +51,15 @@ function initialsOf(testimonial: Testimonial): string {
 ---
 
 <Section id={id} background={background}>
-  <SectionHeading eyebrow={eyebrow} title={title} subtitle={subtitle} />
+  <Reveal>
+    <SectionHeading eyebrow={eyebrow} title={title} subtitle={subtitle} />
+  </Reveal>
 
   <div class="mt-14 grid gap-x-12 gap-y-10 lg:grid-cols-12">
     {/* Cita destacada: sin caja, a tamaño de titular. */}
     {
       featured && (
-        <figure class="flex flex-col gap-6 lg:col-span-7">
+        <Reveal as="figure" class="flex flex-col gap-6 lg:col-span-7">
           <blockquote class="font-display text-h2 text-ink font-medium text-balance">
             <p>“{featured.quote}”</p>
           </blockquote>
@@ -73,14 +76,17 @@ function initialsOf(testimonial: Testimonial): string {
               {featured.role && <span class="text-ink-subtle text-sm">{featured.role}</span>}
             </span>
           </figcaption>
-        </figure>
+        </Reveal>
       )
     }
 
     {/* Los demás: columna secundaria, separados por hairline en vez de cajas. */}
     {
       rest.length > 0 && (
-        <div class="divide-line lg:border-line flex flex-col divide-y lg:col-span-5 lg:border-l lg:pl-10">
+        <Reveal
+          delay={80}
+          class="divide-line lg:border-line flex flex-col divide-y lg:col-span-5 lg:border-l lg:pl-10"
+        >
           {rest.map((item, index) => (
             <figure class={`flex flex-col gap-3 ${index === 0 ? "pb-6" : "py-6 last:pb-0"}`}>
               <blockquote class="text-ink-muted">
@@ -100,7 +106,7 @@ function initialsOf(testimonial: Testimonial): string {
               </figcaption>
             </figure>
           ))}
-        </div>
+        </Reveal>
       )
     }
   </div>

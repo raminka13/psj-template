@@ -1,0 +1,293 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-11T00:00:00.000Z",
+  "title": "Design System: Para Siempre Juntos — Template",
+  "extensions": {
+    "colorMeta": {
+      "brand-primary": {
+        "role": "primary",
+        "displayName": "Verde Azulado Sereno",
+        "canonical": "oklch(0.5 0.11 205)",
+        "tonalRamp": [
+          "oklch(0.15 0.04 205)",
+          "oklch(0.26 0.07 205)",
+          "oklch(0.37 0.09 205)",
+          "oklch(0.50 0.11 205)",
+          "oklch(0.62 0.10 205)",
+          "oklch(0.74 0.08 205)",
+          "oklch(0.86 0.05 205)",
+          "oklch(0.95 0.02 205)"
+        ]
+      },
+      "brand-secondary": {
+        "role": "secondary",
+        "displayName": "Ámbar Cálido",
+        "canonical": "oklch(0.72 0.15 45)",
+        "tonalRamp": [
+          "oklch(0.20 0.05 45)",
+          "oklch(0.32 0.08 45)",
+          "oklch(0.45 0.11 45)",
+          "oklch(0.58 0.14 45)",
+          "oklch(0.72 0.15 45)",
+          "oklch(0.82 0.11 45)",
+          "oklch(0.90 0.07 45)",
+          "oklch(0.96 0.03 45)"
+        ]
+      },
+      "brand-accent": {
+        "role": "tertiary",
+        "displayName": "Verde Vivo",
+        "canonical": "oklch(0.68 0.17 155)",
+        "tonalRamp": [
+          "oklch(0.18 0.05 155)",
+          "oklch(0.30 0.09 155)",
+          "oklch(0.42 0.13 155)",
+          "oklch(0.55 0.16 155)",
+          "oklch(0.68 0.17 155)",
+          "oklch(0.80 0.12 155)",
+          "oklch(0.89 0.07 155)",
+          "oklch(0.96 0.03 155)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Tinta",
+        "canonical": "oklch(0.23 0.012 70)",
+        "tonalRamp": [
+          "oklch(0.15 0.010 70)",
+          "oklch(0.23 0.012 70)",
+          "oklch(0.35 0.012 70)",
+          "oklch(0.46 0.012 70)",
+          "oklch(0.56 0.011 70)",
+          "oklch(0.70 0.008 70)",
+          "oklch(0.83 0.008 70)",
+          "oklch(0.95 0.004 70)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Papel",
+        "canonical": "oklch(1 0 0)",
+        "tonalRamp": [
+          "oklch(0.18 0.008 70)",
+          "oklch(0.24 0.009 70)",
+          "oklch(0.38 0.008 70)",
+          "oklch(0.55 0.006 70)",
+          "oklch(0.72 0.005 70)",
+          "oklch(0.905 0.005 70)",
+          "oklch(0.976 0.004 70)",
+          "oklch(1 0 0)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Títulos de hero. Máximo dos líneas en escritorio; tres líneas es error de escala, no de copy."
+      },
+      "headline": { "displayName": "Headline", "purpose": "h1 de páginas interiores." },
+      "title": { "displayName": "Title", "purpose": "Títulos de sección y citas destacadas." },
+      "lead": {
+        "displayName": "Lead",
+        "purpose": "Bajadas bajo un título. Máximo 20 palabras en hero."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto corrido, tope de 68ch de ancho de lectura."
+      },
+      "label": { "displayName": "Label", "purpose": "Navegación, etiquetas de campo y botones." }
+    },
+    "shadows": [
+      {
+        "name": "shadow-sm",
+        "value": "0 1px 2px oklch(0.2 0.01 70 / 0.05)",
+        "purpose": "Separación mínima de una tarjeta en reposo."
+      },
+      {
+        "name": "shadow-card",
+        "value": "0 1px 2px oklch(0.2 0.01 70 / 0.04), 0 8px 24px oklch(0.2 0.01 70 / 0.06)",
+        "purpose": "Tarjetas elevadas. Teñida en cálido, nunca negro puro."
+      },
+      {
+        "name": "shadow-lg",
+        "value": "0 2px 4px oklch(0.2 0.01 70 / 0.04), 0 16px 48px oklch(0.2 0.01 70 / 0.1)",
+        "purpose": "Paneles flotantes, submenú de navegación y respuesta a hover."
+      },
+      {
+        "name": "shadow-brand",
+        "value": "0 8px 24px color-mix(in oklab, var(--brand-primary) 28%, transparent)",
+        "purpose": "Única sombra con color. Exclusiva del botón primario."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out-soft",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Todo lo que entra o sale. Nunca ease-in en interfaz: arranca lento justo cuando la persona mira."
+      },
+      {
+        "name": "ease-smooth",
+        "value": "cubic-bezier(0.77, 0, 0.175, 1)",
+        "purpose": "Movimiento de un punto a otro dentro de la pantalla."
+      },
+      {
+        "name": "ease-spring",
+        "value": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "purpose": "Rebote ligero. Uso muy puntual."
+      },
+      {
+        "name": "duration-press",
+        "value": "120ms",
+        "purpose": "Feedback de pulsación de botón. Rango 100-160ms."
+      },
+      {
+        "name": "duration-hover",
+        "value": "150ms",
+        "purpose": "Hover de tarjetas y enlaces. Se ve decenas de veces al día: cuanto más frecuente, más corto."
+      },
+      {
+        "name": "duration-disclosure",
+        "value": "200ms",
+        "purpose": "Acordeón, submenú y desplegables. Rango 150-250ms."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acción principal. Única pieza del sistema que lleva sombra de color.",
+      "html": "<button class=\"ds-btn-primary\">Empezar el reto</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; height: 2.75rem; padding: 0 1.5rem; border: none; border-radius: var(--radius-btn, 0.75rem); background: var(--brand-primary, oklch(0.5 0.11 205)); color: var(--brand-primary-on, oklch(0.99 0 0)); font-family: var(--font-body, Inter, system-ui, sans-serif); font-size: 1rem; font-weight: 600; cursor: pointer; box-shadow: 0 8px 24px color-mix(in oklab, var(--brand-primary, oklch(0.5 0.11 205)) 28%, transparent); transition: background-color 120ms cubic-bezier(0.23,1,0.32,1), transform 120ms cubic-bezier(0.23,1,0.32,1); } .ds-btn-primary:hover { background: color-mix(in oklab, var(--brand-primary, oklch(0.5 0.11 205)) 88%, black); } .ds-btn-primary:active { transform: translateY(1px); } .ds-btn-primary:focus-visible { outline: 2px solid var(--brand-primary, oklch(0.5 0.11 205)); outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Acción secundaria. Nunca dos botones sólidos juntos.",
+      "html": "<button class=\"ds-btn-outline\">Leer el blog</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; height: 2.75rem; padding: 0 1.5rem; border: 1px solid var(--line-strong, oklch(0.83 0.008 70)); border-radius: var(--radius-btn, 0.75rem); background: transparent; color: var(--ink, oklch(0.23 0.012 70)); font-family: var(--font-body, Inter, system-ui, sans-serif); font-size: 1rem; font-weight: 600; cursor: pointer; transition: border-color 120ms cubic-bezier(0.23,1,0.32,1), color 120ms cubic-bezier(0.23,1,0.32,1); } .ds-btn-outline:hover { border-color: var(--brand-primary, oklch(0.5 0.11 205)); color: var(--brand-primary, oklch(0.5 0.11 205)); } .ds-btn-outline:focus-visible { outline: 2px solid var(--brand-primary, oklch(0.5 0.11 205)); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "Etiqueta siempre encima. El placeholder nunca hace de etiqueta.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-field-label\" for=\"ds-email\">Tu correo</label><input class=\"ds-field-input\" id=\"ds-email\" type=\"email\" placeholder=\"maria@correo.com\"><p class=\"ds-field-hint\">Te mandaremos el acceso aquí.</p></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 0.375rem; font-family: var(--font-body, Inter, system-ui, sans-serif); max-width: 22rem; } .ds-field-label { font-size: 0.875rem; font-weight: 500; color: var(--ink, oklch(0.23 0.012 70)); } .ds-field-input { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--line, oklch(0.905 0.005 70)); border-radius: var(--radius-input, 0.625rem); background: var(--surface, oklch(1 0 0)); color: var(--ink, oklch(0.23 0.012 70)); font-size: 1rem; transition: border-color 150ms cubic-bezier(0.23,1,0.32,1); } .ds-field-input::placeholder { color: var(--ink-subtle, oklch(0.56 0.011 70)); } .ds-field-input:hover { border-color: var(--line-strong, oklch(0.83 0.008 70)); } .ds-field-input:focus-visible { outline: 2px solid var(--brand-primary, oklch(0.5 0.11 205)); outline-offset: 2px; } .ds-field-hint { font-size: 0.75rem; color: var(--ink-subtle, oklch(0.56 0.011 70)); margin: 0; }"
+    },
+    {
+      "name": "Elevated Card",
+      "kind": "card",
+      "refersTo": "card-elevated",
+      "description": "Tarjeta neutra. Borde antes que sombra en reposo.",
+      "html": "<article class=\"ds-card\"><h3 class=\"ds-card-title\">Reto de Sabiduría</h3><p class=\"ds-card-body\">21 días para construir el hábito de empezar la mañana con dirección.</p></article>",
+      "css": ".ds-card { padding: 1.5rem; border: 1px solid var(--line, oklch(0.905 0.005 70)); border-radius: var(--radius-card, 1.25rem); background: var(--surface, oklch(1 0 0)); box-shadow: 0 1px 2px oklch(0.2 0.01 70 / 0.05); transition: transform 150ms cubic-bezier(0.23,1,0.32,1), box-shadow 150ms cubic-bezier(0.23,1,0.32,1), border-color 150ms cubic-bezier(0.23,1,0.32,1); } .ds-card:hover { transform: translateY(-4px); border-color: color-mix(in oklab, var(--brand-primary, oklch(0.5 0.11 205)) 22%, var(--surface, oklch(1 0 0))); box-shadow: 0 2px 4px oklch(0.2 0.01 70 / 0.04), 0 16px 48px oklch(0.2 0.01 70 / 0.1); } .ds-card-title { margin: 0 0 0.5rem; font-family: var(--font-heading, Newsreader, Georgia, serif); font-size: 1.5rem; font-weight: 600; color: var(--ink, oklch(0.23 0.012 70)); } .ds-card-body { margin: 0; font-family: var(--font-body, Inter, system-ui, sans-serif); color: var(--ink-muted, oklch(0.52 0.012 70)); line-height: 1.65; }"
+    },
+    {
+      "name": "Soft Card",
+      "kind": "card",
+      "refersTo": "card-soft",
+      "description": "Variante tintada. En rejillas se alterna con la neutra para dar ritmo.",
+      "html": "<article class=\"ds-card-soft\"><h3 class=\"ds-card-soft-title\">Más Sabiduría</h3><p class=\"ds-card-soft-body\">Acompañamiento continuo, mes a mes.</p></article>",
+      "css": ".ds-card-soft { padding: 1.5rem; border: 1px solid color-mix(in oklab, var(--brand-primary, oklch(0.5 0.11 205)) 22%, var(--surface, oklch(1 0 0))); border-radius: var(--radius-card, 1.25rem); background: color-mix(in oklab, var(--brand-primary, oklch(0.5 0.11 205)) 10%, var(--surface, oklch(1 0 0))); } .ds-card-soft-title { margin: 0 0 0.5rem; font-family: var(--font-heading, Newsreader, Georgia, serif); font-size: 1.5rem; font-weight: 600; color: var(--ink, oklch(0.23 0.012 70)); } .ds-card-soft-body { margin: 0; font-family: var(--font-body, Inter, system-ui, sans-serif); color: var(--ink-muted, oklch(0.52 0.012 70)); line-height: 1.65; }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge-primary",
+      "description": "Etiqueta pequeña. Píldora completa, fondo tintado al 10%.",
+      "html": "<span class=\"ds-badge\">Nuevo grupo cada lunes</span>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.75rem; border-radius: 9999px; background: color-mix(in oklab, var(--brand-primary, oklch(0.5 0.11 205)) 10%, var(--surface, oklch(1 0 0))); color: var(--brand-primary, oklch(0.5 0.11 205)); font-family: var(--font-body, Inter, system-ui, sans-serif); font-size: 0.875rem; font-weight: 500; }"
+    },
+    {
+      "name": "Nav Link",
+      "kind": "nav",
+      "refersTo": "nav-link",
+      "description": "Enlace de la barra superior, con su estado activo. El submenú abre con hover y con focus-within.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-link ds-nav-link--active\" href=\"#\">Inicio</a><a class=\"ds-nav-link\" href=\"#\">Retos<svg class=\"ds-nav-chevron\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"/></svg></a><a class=\"ds-nav-link\" href=\"#\">Blog</a></nav>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 0.25rem; font-family: var(--font-body, Inter, system-ui, sans-serif); } .ds-nav-link { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.5rem 0.75rem; border-radius: var(--radius-btn, 0.75rem); color: var(--ink-muted, oklch(0.52 0.012 70)); font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: background-color 150ms cubic-bezier(0.23,1,0.32,1), color 150ms cubic-bezier(0.23,1,0.32,1); } .ds-nav-link:hover { background: var(--surface-muted, oklch(0.976 0.004 70)); color: var(--ink, oklch(0.23 0.012 70)); } .ds-nav-link--active { background: color-mix(in oklab, var(--brand-primary, oklch(0.5 0.11 205)) 10%, var(--surface, oklch(1 0 0))); color: var(--brand-primary, oklch(0.5 0.11 205)); } .ds-nav-chevron { width: 0.875rem; height: 0.875rem; transition: transform 200ms cubic-bezier(0.23,1,0.32,1); } .ds-nav-link:hover .ds-nav-chevron { transform: rotate(180deg); }"
+    },
+    {
+      "name": "Step Marker",
+      "kind": "custom",
+      "refersTo": "step-marker",
+      "description": "Componente propio: secuencia numerada sin tarjetas, unida por hairline. Una secuencia no es una rejilla.",
+      "html": "<ol class=\"ds-steps\"><li class=\"ds-step\"><span class=\"ds-step-num\">1</span><h4 class=\"ds-step-title\">Elige tu reto</h4><p class=\"ds-step-body\">Empiezas el lunes siguiente.</p></li><li class=\"ds-step\"><span class=\"ds-step-num\">2</span><h4 class=\"ds-step-title\">15 minutos al día</h4><p class=\"ds-step-body\">Una lección corta cada mañana.</p></li></ol>",
+      "css": ".ds-steps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; margin: 0; padding: 0; list-style: none; font-family: var(--font-body, Inter, system-ui, sans-serif); } .ds-step { position: relative; display: flex; flex-direction: column; gap: 0.75rem; } .ds-step:not(:last-child)::after { content: ''; position: absolute; top: 1.25rem; left: 3rem; width: calc(100% - 2rem); height: 1px; background: var(--line, oklch(0.905 0.005 70)); } .ds-step-num { position: relative; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border: 1px solid color-mix(in oklab, var(--brand-primary, oklch(0.5 0.11 205)) 22%, var(--surface, oklch(1 0 0))); border-radius: 9999px; background: var(--surface, oklch(1 0 0)); color: var(--brand-primary, oklch(0.5 0.11 205)); font-family: var(--font-heading, Newsreader, Georgia, serif); font-weight: 600; } .ds-step-title { margin: 0; font-family: var(--font-heading, Newsreader, Georgia, serif); font-size: 1.125rem; font-weight: 600; color: var(--ink, oklch(0.23 0.012 70)); } .ds-step-body { margin: 0; font-size: 0.875rem; color: var(--ink-muted, oklch(0.52 0.012 70)); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El Devocional de Sobremesa",
+    "overview": "Un libro de lectura diaria que vive en la mesa de la cocina. Se abre todos los días, se lee en quince minutos y no intenta impresionar a nadie: su autoridad viene de estar ahí y de leerse bien, no de llamar la atención. Todo el sistema sale de esa imagen — una serif de publicación pensada para lectura sostenida, papel de tono cálido, y una interfaz que se aparta para dejar leer.\n\nLa densidad es baja y el aire es generoso, pero no es un sistema \"minimalista\" por estética: es que el contenido se consume a diario y cualquier decoración cansa a la tercera visita. El acento frío sobre neutros cálidos es deliberado — el calor lo dan el papel y los grises, así que el color de marca puede ser sobrio sin que la página se sienta corporativa.\n\nEl sistema está construido sobre tokens semánticos: ningún componente escribe un color, un radio o un espaciado literal. Eso no es higiene de código, es la función del producto — es un template del que se saca una copia por cada página de PSJ, y re-marcar una copia entera tiene que ser editar un archivo.",
+    "keyCharacteristics": [
+      "Serif editorial para títulos, sans altamente legible para cuerpo",
+      "Un solo acento visible: teal apagado sobre neutros cálidos",
+      "Plano en reposo; la sombra es respuesta a un estado, no decoración",
+      "Escala tipográfica y espaciado fluidos (clamp), sin media queries",
+      "Modo claro y oscuro con paridad de contraste medida, no estimada"
+    ],
+    "rules": [
+      {
+        "name": "La Regla del Acento Único",
+        "body": "Solo brand-primary es visible en una pantalla. secondary y accent existen para estados y presets de funnel; si aparecen los tres a la vez, la página deja de leerse como marca y empieza a leerse como plantilla.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla del Frío sobre Cálido",
+        "body": "El acento es frío y los neutros cálidos. La temperatura la aportan el papel y los grises, nunca el acento. Calentar el acento rompe el equilibrio y empuja el sistema al beige de catálogo.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla del Contraste Medido",
+        "body": "Los tonos de estado se usan como texto sobre su propio fondo suave, así que su luminosidad la fija la medición y no la estética. Aclararlos también aclara su fondo: el contraste no mejora, empeora.",
+        "section": "colors"
+      },
+      {
+        "name": "La Regla del Énfasis en Familia",
+        "body": "Para destacar una palabra dentro de un titular se usa <em> — itálica de la misma serif. Nunca otro color, otra fuente ni un degradado.",
+        "section": "typography"
+      },
+      {
+        "name": "La Regla del Tracking de Serif",
+        "body": "El tracking de display es casi neutro (-0.005em). Las grotescas piden -0.02em para cerrar huecos; una serif ya trae ese ajuste dibujado en las serifas, y apretarla más pega los remates.",
+        "section": "typography"
+      },
+      {
+        "name": "La Regla de las Dos Líneas",
+        "body": "Un titular de hero ocupa como máximo dos líneas en escritorio. Tres líneas es un error de escala tipográfica, no de longitud de copy: se baja el tamaño o se recorta el titular, y se mide.",
+        "section": "typography"
+      },
+      {
+        "name": "La Regla de Plano en Reposo",
+        "body": "Las superficies son planas por defecto. La sombra aparece como respuesta a un estado — hover, foco, elevación real — o para separar algo que de verdad flota sobre el contenido. Una sombra permanente en una tarjeta estática es decoración.",
+        "section": "elevation"
+      },
+      {
+        "name": "La Regla de Una Sola Escala",
+        "body": "El sistema usa una escala de radios y la aplica entera. Botones de esquina redonda en una página de tarjetas cuadradas, o al revés, es diseño roto.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do usar <em> para enfatizar dentro de un titular: itálica de la misma familia.",
+      "Do teñir las sombras con el tono cálido de los neutros (oklch(0.2 0.01 70 / …)), nunca negro puro.",
+      "Do medir el contraste al tocar la paleta. Al cambiar el acento de este sistema fallaron cuatro pares que \"se veían bien\" (placeholder 3.65, éxito 3.03). Mínimo 4.5:1, o 3:1 en texto ≥18px.",
+      "Do mantener ≥40° de separación de tono entre el acento y los colores de estado, para que un botón no se confunda con un error.",
+      "Do separar con hairline y proximidad antes que con una caja."
+    ],
+    "donts": [
+      "Don't usar Fraunces ni Instrument Serif como display. Son las serifs que todo generador de UI elige por defecto y delatan el origen del diseño antes de que nadie lea una palabra.",
+      "Don't aplicar degradados de color al texto. Un titular con tres colores de marca es la firma visual del titular generado por IA, rompe la regla del acento único, y con color: transparent desaparece por completo si el background-clip falla.",
+      "Don't volver a un acento azul-violeta genérico (tono ~264). Es el color por defecto de cualquier interfaz generada y no dice nada de esta marca.",
+      "Don't poner una barra de acento gruesa al lado de citas o tarjetas (border-left: 3px solid). El detector de Impeccable la marca por sí sola como el recurso más reconocible de la UI generada por máquina."
+    ]
+  }
+}

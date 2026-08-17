@@ -1,0 +1,358 @@
+---
+/**
+ * ============================================================================
+ *  PRÓXIMOS RETOS — cuándo arranca cada grupo
+ * ============================================================================
+ *  Responde la pregunta que la gente hace justo después de leer un reto:
+ *  "¿y cuándo empieza?". Hasta ahora la respuesta estaba repartida entre el
+ *  eyebrow del hero de la home ("Nuevo grupo cada lunes") y el CTA de cierre
+ *  ("El próximo grupo empieza el lunes"), sin ninguna fecha concreta.
+ *
+ *  Las fechas salen de src/data/fechas.json a través de getProximasFechas(),
+ *  que ya filtra las pasadas y resuelve el reto de cada una. Añadir una fecha
+ *  es añadir un objeto a ese archivo.
+ *
+ *  ── POR QUÉ NO EMITE SCHEMA `Event` ──────────────────────────────────────
+ *  lib/schema.ts tiene event() y era tentador emitir uno por fecha. No se hace
+ *  a propósito: un grupo de 21 días no es un evento, es una instancia de curso,
+ *  y Google trata los Event mal declarados como spam de datos estructurados. La
+ *  forma correcta sería `courseSchedule` dentro del Course que ya emite cada
+ *  página de reto; mientras course() no lo soporte, esta página no declara nada
+ *  y no declara nada falso.
+ *
+ *  ── CUENTAS DE COMPOSICIÓN ───────────────────────────────────────────────
+ *    Secciones ....................... 6
+ *    Eyebrows ........................ 0  (tope: ceil(6/3) = 2)
+ *    Familias de layout .............. 6  (mínimo: 4)
+ *    Misma familia seguida ........... 1  (tope: 2)
+ *    Acentos de marca por vista ...... 1  (primary; los estados no cuentan)
+ *
+ *  Cero eyebrows: el titular del hero ya dice que esto son fechas, y cada mes
+ *  lleva su propio <h2>. Una etiqueta "Calendario" encima solo repetiría.
+ * ============================================================================
+ */
+import CtaBanner from "@components/cta/CtaBanner.astro";
+import Form from "@components/forms/Form.astro";
+import FaqSection from "@components/sections/FaqSection.astro";
+import Hero from "@components/sections/Hero.astro";
+import Steps from "@components/sections/Steps.astro";
+import Badge from "@components/ui/Badge.astro";
+import Button from "@components/ui/Button.astro";
+import Card from "@components/ui/Card.astro";
+import Reveal from "@components/ui/Reveal.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import { site } from "@config/site";
+import PageLayout from "@layouts/PageLayout.astro";
+import { getProximasFechas, type FechaDeArranque } from "@lib/content";
+
+const proximas = await getProximasFechas();
+
+/**
+ * Locale para Intl, derivado de site.locale.
+ *
+ * site.locale es "es_MX" porque ese es el formato que pide Open Graph; Intl
+ * quiere "es-MX". Se deriva en vez de escribirlo a mano para que, al clonar el
+ * template a otro país, los meses y los días cambien de idioma solos.
+ */
+const locale = site.locale.replace("_", "-");
+
+/**
+ * `timeZone: "UTC"` es obligatorio en los dos formateadores.
+ *
+ * Las fechas del JSON ("2026-09-07") se interpretan como medianoche UTC.
+ * Formatearlas en la zona del servidor de build las correría al día anterior en
+ * cualquier huso negativo — y el sitio se publicaría anunciando el lunes 7 como
+ * "domingo 6", que es un error que nadie detecta leyendo el JSON.
+ */
+const formatoDia = new Intl.DateTimeFormat(locale, {
+  weekday: "long",
+  day: "numeric",
+  timeZone: "UTC",
+});
+const formatoMes = new Intl.DateTimeFormat(locale, { month: "long", timeZone: "UTC" });
+
+/** "septiembre" → "Septiembre 2026". */
+function tituloDeMes(date: Date): string {
+  const mes = formatoMes.format(date);
+  return `${mes.charAt(0).toUpperCase()}${mes.slice(1)} ${date.getUTCFullYear()}`;
+}
+
+/**
+ * "lunes 7" → "Lunes 7". El mes no se repite en la fila porque ya lo lleva el
+ * encabezado del grupo; repetirlo en ocho filas es ruido.
+ */
+function etiquetaDeDia(date: Date): string {
+  const texto = formatoDia.format(date);
+  return `${texto.charAt(0).toUpperCase()}${texto.slice(1)}`;
+}
+
+/** Fecha en YYYY-MM-DD para el atributo datetime de <time>. */
+function iso(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}
+
+/**
+ * Solo se etiquetan las EXCEPCIONES.
+ *
+ * "Inscripción abierta" es la norma, y una insignia verde repetida en ocho
+ * filas deja de informar: se convierte en una columna de color que compite con
+ * el único acento de marca de la página. Que una fila no tenga marca es el
+ * dato. Cuando hay excepciones se explica con una línea, no con ocho.
+ */
+const ESTADO_VISIBLE: Record<
+  FechaDeArranque["status"],
+  { label: string; variant: "warning" | "neutral" } | null
+> = {
+  abierto: null,
+  "lista-de-espera": { label: "Lista de espera", variant: "warning" },
+  cerrado: { label: "Cupos llenos", variant: "neutral" },
+};
+
+const hayExcepciones = proximas.some((fecha) => fecha.status !== "abierto");
+
+/**
+ * Agrupado por mes. Como `proximas` ya viene ordenada, basta comparar con el
+ * último grupo abierto en vez de construir un mapa y reordenarlo.
+ */
+interface GrupoDeMes {
+  key: string;
+  titulo: string;
+  fechas: FechaDeArranque[];
+}
+
+const meses: GrupoDeMes[] = [];
+
+for (const fecha of proximas) {
+  const key = `${fecha.startDate.getUTCFullYear()}-${fecha.startDate.getUTCMonth()}`;
+  const ultimo = meses[meses.length - 1];
+
+  if (ultimo && ultimo.key === key) {
+    ultimo.fechas.push(fecha);
+  } else {
+    meses.push({ key, titulo: tituloDeMes(fecha.startDate), fechas: [fecha] });
+  }
+}
+
+/**
+ * Qué pasa la semana que arranca. Cada paso es un dato que ya está declarado en
+ * el template (la lección de las 6:00, el grupo que empieza el mismo lunes, las
+ * sesiones grabadas, el acceso de por vida): aquí solo se ordena en el tiempo.
+ */
+const laSemanaQueArranca = [
+  {
+    title: "Te llega el acceso",
+    description:
+      "En cuanto te registras. Ahí viene la fecha exacta, el enlace al grupo y qué esperar el primer día.",
+  },
+  {
+    title: "El lunes empieza el grupo",
+    description:
+      "La primera lección llega a las 6:00 de la mañana. Todos arrancan el mismo día, no cada uno por su lado.",
+  },
+  {
+    title: "La primera sesión en vivo",
+    description:
+      "Esa misma semana, para resolver lo que se atoró. Queda grabada por si no alcanzas a entrar.",
+  },
+  {
+    title: "El material se queda contigo",
+    description:
+      "Al terminar no se cierra nada: puedes repetir el reto en cualquier grupo posterior.",
+  },
+];
+
+/**
+ * FAQs propias de esta página: son sobre FECHAS, no sobre el reto. No se
+ * mezclan con las generales de src/data/faqs.json a propósito — quien llega
+ * aquí ya sabe qué es el reto y viene a preguntar por el calendario.
+ *
+ * El mismo array va al layout (que genera el FAQPage) y al <FaqSection>.
+ */
+const faqs = [
+  {
+    q: "¿Los grupos siempre empiezan en lunes?",
+    a: "Sí. Que todos arranquen el mismo día es lo que hace que el acompañamiento funcione: cuando alguien falta el miércoles, se nota y alguien le escribe. Con entradas escalonadas eso se pierde.",
+  },
+  {
+    q: "¿Qué pasa si no puedo empezar en ninguna de estas fechas?",
+    a: "Déjanos tus datos igual. Publicamos las fechas con varias semanas de anticipación y te avisamos en cuanto se abra la siguiente.",
+  },
+  {
+    q: "¿Qué significa que un grupo esté en lista de espera?",
+    a: "Que ya llenó sus lugares. Si alguien lo deja, entra la primera persona de la lista; si no, te pasamos al grupo siguiente sin costo.",
+  },
+  {
+    q: "¿Puedo cambiarme de fecha después de registrarme?",
+    a: "Sí. Escríbenos antes de que arranque tu grupo y te movemos al siguiente. El material no se vence, así que no pierdes nada.",
+  },
+];
+---
+
+<PageLayout
+  pageType="CollectionPage"
+  seo={{
+    title: "Próximos retos",
+    description:
+      "Las fechas de arranque de los retos y programas de PSJ. Cada grupo empieza un lunes: elige la fecha que te acomode y aparta tu lugar.",
+    keywords: [
+      "próximos retos",
+      "fechas de arranque",
+      "cuándo empieza el reto de sabiduría",
+      "calendario de retos cristianos",
+    ],
+    faqs,
+    breadcrumbs: [
+      { name: "Retos", href: "/retos" },
+      { name: "Próximos retos", href: "/proximos-retos" },
+    ],
+  }}
+>
+  <Hero
+    title="Las próximas <em>fechas de arranque</em>"
+    subtitle="Cada grupo empieza un lunes y camina junto todo el reto. Elige la fecha que te acomode."
+    primaryCta={{ label: "Empezar el reto", href: "#registro" }}
+    secondaryCta={{ label: "Ver los retos", href: "/retos" }}
+  />
+
+  {
+    /*
+    EL CALENDARIO. Familia de layout propia: el mes vive en una columna
+    lateral y sus fechas son filas separadas por filete, sin tarjetas.
+
+    No es una rejilla de tarjetas porque una fecha no es un producto que se
+    compara: se escanea buscando "cuál me toca". Una lista con el mes anclado a
+    la izquierda se lee de arriba abajo en un barrido, que es exactamente cómo
+    se lee un calendario.
+
+    Cada <li> lleva su propio id para poder enlazar una fecha concreta.
+  */
+  }
+  <Section>
+    {
+      meses.length > 0 ? (
+        <div class="flex flex-col gap-12 sm:gap-14">
+          {hayExcepciones && (
+            <p class="text-ink-subtle -mb-6 text-sm sm:-mb-8">
+              Las fechas sin marca tienen la inscripción abierta.
+            </p>
+          )}
+
+          {meses.map((mes, indice) => (
+            <Reveal class="grid gap-x-10 gap-y-4 lg:grid-cols-12" delay={indice === 0 ? 0 : 60}>
+              <h2 class="font-display text-h3 text-ink font-semibold lg:col-span-3">{mes.titulo}</h2>
+
+              <ol class="divide-line border-line divide-y border-t lg:col-span-9">
+                {mes.fechas.map((fecha) => {
+                  const estado = ESTADO_VISIBLE[fecha.status];
+
+                  /*
+                    Duración, dedicación y nota en una sola tira. Se raciona el
+                    punto medio: las notas son excepcionales (dos de ocho
+                    fechas), así que la tira se queda en dos separadores casi
+                    siempre y no se lee como decoración.
+                  */
+                  const meta = [fecha.reto.data.duration, fecha.reto.data.commitment, fecha.note]
+                    .filter(Boolean)
+                    .join(" · ");
+
+                  return (
+                    <li id={fecha.id}>
+                      <a
+                        href={`/retos/${fecha.reto.id}`}
+                        class="group grid gap-x-6 gap-y-2 py-5 sm:grid-cols-[9rem_1fr_auto] sm:items-start"
+                      >
+                        <time
+                          datetime={iso(fecha.startDate)}
+                          class="font-display text-ink text-lg font-semibold tabular-nums"
+                        >
+                          {etiquetaDeDia(fecha.startDate)}
+                        </time>
+
+                        <span class="flex flex-col gap-1">
+                          <span class="text-ink group-hover:text-primary font-semibold transition-colors duration-150">
+                            {fecha.reto.data.title}
+                          </span>
+                          <span class="text-ink-subtle text-sm">{meta}</span>
+                        </span>
+
+                        {/*
+                          `justify-self-start` en móvil no es redundante: la
+                          insignia es hija directa de la rejilla, y un hijo de
+                          rejilla se estira a todo el ancho de su columna por
+                          defecto. Sin esto, "Cupos llenos" se publicaba como una
+                          barra de 327px con el texto pegado a la izquierda, que
+                          no se lee como insignia.
+                        */}
+                        {estado && (
+                          <Badge
+                            variant={estado.variant}
+                            size="sm"
+                            class="justify-self-start sm:justify-self-end"
+                          >
+                            {estado.label}
+                          </Badge>
+                        )}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ol>
+            </Reveal>
+          ))}
+        </div>
+      ) : (
+        /*
+          ESTADO VACÍO. Un calendario es el único contenido que caduca solo, así
+          que esta rama no es defensiva: es la que se ve si nadie actualiza el
+          JSON. Sin ella la sección quedaría en blanco y la página se leería
+          como rota justo cuando más hace falta capturar el lead.
+
+          getProximasFechas() además avisa en la consola del build.
+        */
+        <Card variant="soft" class="flex max-w-2xl flex-col items-start gap-4">
+          <h2 class="font-display text-h3 text-ink font-semibold">
+            Estamos cerrando el próximo calendario
+          </h2>
+          <p class="text-ink-muted">
+            Las fechas del siguiente trimestre se publican aquí en cuanto quedan confirmadas. Déjanos
+            tu correo y te avisamos el mismo día que abren, antes de que se llenen los lugares.
+          </p>
+          <Button href="#registro" class="mt-2">Empezar el reto</Button>
+        </Card>
+      )
+    }
+  </Section>
+
+  {/* Familia distinta: secuencia numerada. Aquí el orden SÍ significa algo. */}
+  <Steps
+    id="que-pasa"
+    title="Qué pasa la semana que arrancas"
+    subtitle="Para que sepas exactamente en qué te estás metiendo antes de apartar tu lugar."
+    items={laSemanaQueArranca}
+    background="muted"
+  />
+
+  <Section id="registro">
+    <div class="grid items-start gap-x-12 gap-y-10 lg:grid-cols-12">
+      <Reveal class="lg:col-span-5">
+        <SectionHeading
+          title="Aparta tu lugar en la fecha que elijas"
+          subtitle="Déjanos tu nombre y tu correo. Te mandamos el acceso, la fecha confirmada y los recordatorios."
+        />
+      </Reveal>
+      <Reveal class="lg:col-span-6 lg:col-start-7" delay={80}>
+        <Form id="optin-reto" location="proximos-retos" />
+      </Reveal>
+    </div>
+  </Section>
+
+  <FaqSection
+    title="Dudas sobre las fechas"
+    subtitle="Si la tuya no está aquí, escríbenos y te contestamos el mismo día hábil."
+    items={faqs}
+    background="muted"
+  />
+
+  <CtaBanner id="empezar-reto" anchorId="cta-final" location="proximos-retos" />
+</PageLayout>

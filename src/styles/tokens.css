@@ -172,6 +172,9 @@
    *
    * Look anguloso para una página: pon todos en 0.
    * Look muy suave: sube card a 2rem y btn a 9999px. */
+  /* Paso pequeño para elementos diminutos: código en línea, casillas. Con el
+   * radio de campo (0.625rem) una casilla de 20px se ve casi circular. */
+  --radius-sm: 0.375rem;
   --radius-btn: 0.75rem;
   --radius-input: 0.625rem;
   --radius-card: 1.25rem;

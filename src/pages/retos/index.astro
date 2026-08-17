@@ -28,9 +28,19 @@ const retos = await getRetos();
   }}
 >
   <Section spacing="sm">
+    {
+      /*
+      El enlace al calendario va en la bajada y no como botón suelto: "¿cuándo
+      empieza?" es la pregunta que sigue a "¿cuál elijo?", así que se contesta
+      en la misma frase en la que se plantea la elección. Un botón aparte
+      compite con las tarjetas, que es lo que la página vino a mostrar.
+
+      `subtitle` pasa por set:html, así que acepta el enlace tal cual.
+    */
+    }
     <SectionHeading
       title="Elige por dónde empezar"
-      subtitle="Tres caminos distintos. No hay orden obligatorio, aunque la mayoría empieza por el primero."
+      subtitle='Tres caminos distintos. No hay orden obligatorio, aunque la mayoría empieza por el primero. Las fechas de arranque están en <a class="text-primary underline decoration-1 underline-offset-4" href="/proximos-retos">próximos retos</a>.'
       as="h1"
       size="h1"
     />

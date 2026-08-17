@@ -85,7 +85,7 @@ const colSpan = field.width === "half" ? "sm:col-span-1" : "sm:col-span-2";
             data-state={error ? "error" : undefined}
             aria-invalid={error ? "true" : undefined}
             aria-describedby={describedBy}
-            class="border-line accent-primary data-[state=error]:border-danger mt-0.5 size-5 shrink-0 rounded-[0.3rem]"
+            class="border-line accent-primary data-[state=error]:border-danger mt-0.5 size-5 shrink-0 rounded-sm"
             {...messageAttrs}
           />
           <span set:html={field.label} />

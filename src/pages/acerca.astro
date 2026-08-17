@@ -1,0 +1,227 @@
+---
+/**
+ * ============================================================================
+ *  ACERCA DE PSJ
+ * ============================================================================
+ *  La página que faltaba para que el sitio tuviera una identidad y no solo un
+ *  catálogo. Contesta tres cosas en este orden: qué es PSJ, por qué existe y
+ *  cómo trabaja.
+ *
+ *  ── LO QUE ESTA PÁGINA NO INVENTA ────────────────────────────────────────
+ *  Toda la información viene de datos que el template ya declara en otro sitio
+ *  (los tres programas, la cifra de personas, la garantía de 14 días, el grupo
+ *  que arranca cada lunes). No hay año de fundación, ni ciudad, ni nombres de
+ *  personas: eso NO se puede rellenar con texto de relleno, porque una página
+ *  "Acerca de" es exactamente donde alguien va a buscar un dato verificable, y
+ *  un dato inventado que se publica se convierte en un dato falso.
+ *
+ *  PENDIENTE (contenido): el bloque del equipo o de quien fundó PSJ va entre la
+ *  sección editorial y las reglas. Necesita nombre, foto y una línea de rol
+ *  reales; en cuanto existan, es una sección más — no hay que rehacer nada.
+ *
+ *  PENDIENTE (asset): el hero tiene ranura para imagen sin usar, igual que en
+ *  la home. Con una foto de comunidad (vertical, ~900x1100) pasa a ser un hero
+ *  con asset. Se pone como hijo de <Hero>.
+ *
+ *  ── CUENTAS DE COMPOSICIÓN ───────────────────────────────────────────────
+ *    Secciones ....................... 7
+ *    Eyebrows ........................ 0  (tope: ceil(7/3) = 3)
+ *    Familias de layout .............. 7  (mínimo: 4)
+ *    Misma familia seguida ........... 1  (tope: 2)
+ *    Acentos de marca por vista ...... 1  (primary)
+ *
+ *  Cero eyebrows: el <title> y la miga de pan ya dicen que esta página es
+ *  "Acerca de PSJ", así que una etiqueta encima del titular solo repetiría la
+ *  categoría en vez de aportar. La regla es que los eyebrows se borran.
+ * ============================================================================
+ */
+import CtaBanner from "@components/cta/CtaBanner.astro";
+import Features from "@components/sections/Features.astro";
+import Hero from "@components/sections/Hero.astro";
+import Testimonials from "@components/sections/Testimonials.astro";
+import TrustStrip from "@components/sections/TrustStrip.astro";
+import Prose from "@components/ui/Prose.astro";
+import Reveal from "@components/ui/Reveal.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import PageLayout from "@layouts/PageLayout.astro";
+import { getRetos, getTestimonios } from "@lib/content";
+
+const retos = await getRetos();
+const testimonios = await getTestimonios({ featuredOnly: true, limit: 3 });
+
+/**
+ * El número de programas sale de la colección, no de un literal. Es el dato
+ * que más se desactualiza en una página "Acerca de": se escribe "tres
+ * programas", se lanza el cuarto y nadie vuelve a esta página.
+ */
+const datosDeLaMarca = [
+  { value: `${retos.length} programas activos`, label: "Retos, acompañamiento y formación" },
+  { value: "+5.000 personas", label: "Ya empezaron un reto" },
+  { value: "Nuevo grupo cada lunes", label: "Con las fechas publicadas por adelantado" },
+];
+
+/**
+ * Las reglas son las MISMAS decisiones que ya están implementadas en el
+ * producto (duración, grupo, acceso, garantía). Si alguna cambia en el
+ * producto, cambia aquí: es lo que hace que la página se pueda defender.
+ */
+const reglas = [
+  {
+    title: "Cabe en tu día",
+    description:
+      "Quince minutos, no una hora. Un programa que no cabe en una semana ocupada no se termina, y el que no se termina no sirve de nada.",
+  },
+  {
+    title: "Nadie camina solo",
+    description:
+      "Cada reto arranca en grupo el mismo día. Cuando alguien falta, otra persona lo nota y le escribe. Esa es la mitad del resultado.",
+  },
+  {
+    title: "El contenido no se vence",
+    description:
+      "Si te saltas tres días, retomas donde quedaste. Aquí no se acumula deuda ni se pierde el acceso por dejar de entrar.",
+  },
+  {
+    title: "Si no era para ti, se devuelve",
+    description:
+      "Catorce días para probarlo completo. Se devuelve sin formularios y sin preguntas incómodas.",
+  },
+];
+
+const puertasDeEntrada = [
+  {
+    icon: "book-open",
+    title: "Los retos",
+    description: "Programas cortos con fecha de inicio, grupo de acompañamiento y sesiones en vivo.",
+    href: "/retos",
+  },
+  {
+    icon: "calendar-days",
+    title: "Las próximas fechas",
+    description: "El calendario de arranques, publicado con semanas de anticipación.",
+    href: "/proximos-retos",
+  },
+  {
+    icon: "pen-line",
+    title: "El blog",
+    description: "Lo que escribimos entre reto y reto. Se lee completo sin registrarse en nada.",
+    href: "/blog",
+  },
+];
+---
+
+<PageLayout
+  pageType="AboutPage"
+  seo={{
+    title: "Acerca de PSJ",
+    description:
+      "Quiénes somos y por qué hacemos retos cortos en lugar de cursos largos: contenido de fe en español pensado para caber en una semana ocupada.",
+    keywords: [
+      "acerca de para siempre juntos",
+      "quiénes somos psj",
+      "comunidad cristiana en español",
+      "ministerio de contenido en español",
+    ],
+    breadcrumbs: [{ name: "Acerca de PSJ", href: "/acerca" }],
+  }}
+>
+  <Hero
+    title="Contenido de fe que <em>se aplica el mismo día</em>"
+    subtitle="Somos PSJ: retos cortos, acompañamiento real y una comunidad en español que sí responde."
+    primaryCta={{ label: "Empezar el reto", href: "/retos" }}
+    secondaryCta={{ label: "Ver próximas fechas", href: "/proximos-retos" }}
+  />
+
+  <TrustStrip items={datosDeLaMarca} />
+
+  {
+    /*
+    POR QUÉ EXISTE. Familia editorial a dos columnas: la tesis a la izquierda en
+    tamaño de titular, el desarrollo a la derecha en columna de lectura.
+
+    No va como párrafo centrado a todo lo ancho porque son ~150 palabras: a 68ch
+    se leen en líneas cómodas, y a todo lo ancho de la página el ojo pierde el
+    renglón al volver. `measure` lo aplica <Prose> solo.
+  */
+  }
+  <Section background="muted">
+    <div class="grid gap-x-12 gap-y-8 lg:grid-cols-12">
+      <Reveal class="lg:col-span-5">
+        <SectionHeading
+          title="Nadie abandona por falta de ganas"
+          subtitle="Lo que cambia el resultado no es la motivación. Es el tamaño."
+        />
+      </Reveal>
+
+      <Reveal class="lg:col-span-6 lg:col-start-7" delay={80}>
+        <Prose>
+          <p>
+            La razón número uno por la que alguien deja un programa de crecimiento no es la falta de
+            ganas: es que no cabía en su semana. Un plan de una hora diaria se abandona el jueves, y
+            quien lo abandona se queda además con la sensación de haberle fallado a algo importante.
+          </p>
+          <p>
+            Por eso todo lo que hacemos empieza por el tamaño. Quince minutos, no una hora.
+            Veintiún días, no un año. Un grupo que arranca el mismo lunes que tú, para que el día
+            que faltes alguien lo note. Y material que no se vence, porque la vida real trae semanas
+            en las que no se puede.
+          </p>
+          <p>
+            No somos una iglesia ni una plataforma de cursos: no reemplazamos a tu comunidad local
+            ni damos consejería. Hacemos una sola cosa, y la hacemos bien — contenido en español,
+            escrito para la vida de esta semana, con alguien del otro lado cuando algo se atora.
+          </p>
+        </Prose>
+      </Reveal>
+    </div>
+  </Section>
+
+  {
+    /*
+    LAS REGLAS. Rejilla de definiciones con filetes, sin tarjetas: son cuatro
+    afirmaciones del mismo peso, y meterlas en cajas con iconito las habría
+    convertido en la misma rejilla de features que ya aparece más abajo.
+
+    <dl> y no <ul> porque literalmente son término + definición, y así el lector
+    de pantalla anuncia la relación entre el nombre de la regla y su explicación.
+  */
+  }
+  <Section>
+    <Reveal>
+      <SectionHeading
+        title="Cuatro reglas que no negociamos"
+        subtitle="Están escritas aquí para que se nos puedan reclamar."
+      />
+    </Reveal>
+
+    <dl class="border-line mt-14 grid border-b sm:grid-cols-2 sm:gap-x-12">
+      {
+        reglas.map((regla, indice) => (
+          <Reveal class="border-line border-t py-6" delay={indice * 60}>
+            <dt class="font-display text-ink text-lg font-semibold">{regla.title}</dt>
+            <dd class="text-ink-muted mt-2">{regla.description}</dd>
+          </Reveal>
+        ))
+      }
+    </dl>
+  </Section>
+
+  {/* Los tres caminos de entrada, con enlace real cada uno. */}
+  <Features
+    title="Por dónde entra la gente"
+    subtitle="No hay un orden obligatorio: la mayoría llega leyendo y se queda por el grupo."
+    items={puertasDeEntrada}
+    columns={3}
+    background="muted"
+  />
+
+  <Testimonials
+    id="testimonios"
+    title="Lo que cambia en tres semanas"
+    items={testimonios}
+    background="default"
+  />
+
+  <CtaBanner id="empezar-reto" anchorId="cta-final" location="acerca" />
+</PageLayout>

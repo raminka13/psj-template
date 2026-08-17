@@ -157,4 +157,48 @@ const retos = defineCollection({
     }),
 });
 
-export const collections = { blog, faqs, testimonios, retos };
+// ── Fechas de arranque ────────────────────────────────────────────────────
+// Cuándo empieza cada grupo. Alimenta /proximos-retos.
+//
+// Es una colección aparte y no un campo del reto porque la relación es
+// uno-a-muchos: el Reto de Sabiduría arranca un grupo nuevo cada pocas
+// semanas. Metido en el frontmatter del reto habría que reescribir el archivo
+// del programa cada vez que se abre una fecha, y el historial del reto quedaría
+// lleno de commits que no cambian el reto.
+const fechas = defineCollection({
+  loader: file("./src/data/fechas.json"),
+  schema: z.object({
+    id: z.string(),
+
+    /**
+     * id del reto que arranca: el NOMBRE DEL ARCHIVO en src/content/retos/,
+     * sin extensión. Si no existe, `getProximasFechas()` rompe el build con el
+     * listado de ids válidos — una fecha que apunta a un reto inexistente
+     * publicaría una fila enlazando a un 404.
+     */
+    reto: z.string(),
+
+    /** Día de arranque en formato YYYY-MM-DD. Siempre un lunes. */
+    startDate: z.coerce.date(),
+
+    /**
+     * Disponibilidad. Solo se marcan las excepciones en la página: "abierto"
+     * es la norma y no lleva etiqueta.
+     */
+    status: z.enum(["abierto", "lista-de-espera", "cerrado"]).default("abierto"),
+
+    /** Nota corta que se muestra en la fila: "Último grupo del año". */
+    note: z.string().max(60, "No cabe en la fila del calendario").optional(),
+
+    /**
+     * NO lleva `order`, y la ausencia es deliberada.
+     *
+     * Las colecciones `faqs` y `testimonios` lo necesitan porque su orden es
+     * editorial y getCollection() no respeta el del JSON. Aquí el orden lo fija
+     * `startDate`, que ya es un dato de la propia fecha: un campo `order`
+     * paralelo se desincronizaría del calendario a la primera edición.
+     */
+  }),
+});
+
+export const collections = { blog, faqs, testimonios, retos, fechas };

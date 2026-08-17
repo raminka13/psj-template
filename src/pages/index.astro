@@ -10,17 +10,32 @@
  *
  *  Fíjate en el patrón de `faqs`: el MISMO array va al layout (que genera el
  *  FAQPage del JSON-LD) y al <FaqSection /> (que lo dibuja). Una sola fuente.
+ *
+ *  ── CUENTAS DE COMPOSICIÓN DE ESTA PÁGINA ───────────────────────────────
+ *  Las reglas de CLAUDE.md son contables, así que aquí está la cuenta hecha:
+ *
+ *    Secciones ....................... 9
+ *    Eyebrows ........................ 1  (tope: ceil(9/3) = 3)
+ *    Familias de layout .............. 7  (mínimo: 4)
+ *    Misma familia seguida ........... 2  (tope: 2 — los dos formularios)
+ *    Acentos de marca por vista ...... 1  (primary)
+ *
+ *  El único eyebrow es el del hero. Los de "Testimonios" y "Preguntas" se
+ *  quitaron: sus propios titulares ya dicen qué es cada sección, así que la
+ *  etiqueta solo repetía. La regla es que los eyebrows se borran, no se
+ *  reemplazan.
  * ============================================================================
  */
 import CtaBanner from "@components/cta/CtaBanner.astro";
 import CtaSticky from "@components/cta/CtaSticky.astro";
 import Form from "@components/forms/Form.astro";
 import FaqSection from "@components/sections/FaqSection.astro";
-import Features from "@components/sections/Features.astro";
 import Hero from "@components/sections/Hero.astro";
+import RetoShowcase from "@components/sections/RetoShowcase.astro";
 import Steps from "@components/sections/Steps.astro";
 import Testimonials from "@components/sections/Testimonials.astro";
-import Container from "@components/ui/Container.astro";
+import TrustStrip from "@components/sections/TrustStrip.astro";
+import Reveal from "@components/ui/Reveal.astro";
 import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 import PageLayout from "@layouts/PageLayout.astro";
@@ -35,12 +50,21 @@ const testimonios = await getTestimonios({ featuredOnly: true });
  * Los retos salen de la colección, no de un array escrito aquí. Antes estaban
  * duplicados en esta página: con páginas propias, menú y footer alimentándose
  * de lo mismo, un array suelto habría quedado desfasado a la primera edición.
- * Cada tarjeta enlaza a la página del reto.
+ *
+ * Se pasan `tagline`, `duration`, `commitment` y `cover` además del título y la
+ * descripción, porque <RetoShowcase> los usa para jerarquizar: el primero
+ * (order más bajo) se dibuja como puerta de entrada y los demás como caminos
+ * alternos. Todos esos campos ya existían en el frontmatter.
  */
 const retos = (await getRetos({ featuredOnly: true })).map((reto) => ({
   icon: reto.data.icon,
   title: reto.data.title,
+  tagline: reto.data.tagline,
   description: reto.data.description,
+  duration: reto.data.duration,
+  commitment: reto.data.commitment,
+  cover: reto.data.cover,
+  coverAlt: reto.data.coverAlt,
   href: `/retos/${reto.id}`,
 }));
 
@@ -66,6 +90,16 @@ const comoFunciona = [
     description: "Lo repites las veces que quieras, con todas las actualizaciones incluidas.",
   },
 ];
+
+/**
+ * La prueba social que antes vivía dentro del hero, y antes de eso era un
+ * párrafo con puntos medios. Cada dato es una celda con su filete.
+ */
+const datosDelPrograma = [
+  { value: "+5.000 personas", label: "Ya empezaron un reto" },
+  { value: "Garantía de 14 días", label: "Se devuelve sin preguntas" },
+  { value: "Acceso de por vida", label: "Con las actualizaciones incluidas" },
+];
 ---
 
 <PageLayout
@@ -85,6 +119,12 @@ const comoFunciona = [
     /*
     Hero: 4 elementos de texto exactos. El énfasis del titular es <em> —
     itálica de la misma serif — y no un degradado de color.
+
+    PENDIENTE (asset): el hero tiene una ranura para imagen que hoy no se usa,
+    así que la columna derecha la ocupa solo la luz de marca. Con una foto real
+    (retrato o mano con cuaderno, vertical, ~900x1100) pasaría a ser un hero con
+    asset. Se pone como hijo de <Hero>: la ranura solo se renderiza si hay algo
+    dentro, así que hasta entonces no queda hueco fantasma.
   */
   }
   <Hero
@@ -95,31 +135,24 @@ const comoFunciona = [
     secondaryCta={{ label: "Leer el blog", href: "/blog" }}
   />
 
+  <TrustStrip items={datosDelPrograma} />
+
   {
     /*
-    La prueba social que antes vivía dentro del hero. Fuera de él tiene sitio
-    para respirar y deja el hero en un solo mensaje.
+    Los retos en composición asimétrica: el primero ocupa 7 de 12 columnas con
+    fondo tintado y los otros dos comparten una columna de 5 separados por
+    filete. Antes era una rejilla de tres tarjetas iguales, que hacía que la
+    puerta de entrada y las alternativas pesaran lo mismo — justo el dato que
+    la persona necesita para elegir.
+
+    Sin eyebrow: la posición en la página ya dice qué es esta sección.
   */
   }
-  <Container>
-    <p
-      class="border-line text-ink-muted flex flex-wrap items-center gap-x-3 gap-y-1 border-y py-4 text-sm"
-    >
-      <span><strong class="text-ink font-semibold">+5.000 personas</strong> ya empezaron</span>
-      <span class="text-ink-subtle" aria-hidden="true">·</span>
-      <span>Garantía de 14 días</span>
-      <span class="text-ink-subtle" aria-hidden="true">·</span>
-      <span>Acceso de por vida</span>
-    </p>
-  </Container>
-
-  {/* Sin eyebrow: la posición en la página ya dice qué es esta sección. */}
-  <Features
+  <RetoShowcase
     id="retos"
     title="Elige por dónde empezar"
     subtitle="Tres caminos distintos. No hay orden obligatorio: escoge el que se parezca a lo que traes ahora."
     items={retos}
-    columns={3}
     background="muted"
   />
 
@@ -137,12 +170,7 @@ const comoFunciona = [
     items={comoFunciona}
   />
 
-  <Testimonials
-    id="testimonios"
-    eyebrow="Testimonios"
-    title="Lo que dicen quienes ya lo hicieron"
-    items={testimonios}
-  />
+  <Testimonials id="testimonios" title="Lo que dicen quienes ya lo hicieron" items={testimonios} />
 
   {
     /*
@@ -156,15 +184,15 @@ const comoFunciona = [
   }
   <Section id="registro" background="muted">
     <div class="grid items-start gap-x-12 gap-y-10 lg:grid-cols-12">
-      <div class="lg:col-span-5">
+      <Reveal class="lg:col-span-5">
         <SectionHeading
           title="Aparta tu lugar para el lunes"
           subtitle="Déjanos tu nombre y tu correo. Te mandamos el acceso y los recordatorios."
         />
-      </div>
-      <div class="lg:col-span-6 lg:col-start-7">
+      </Reveal>
+      <Reveal class="lg:col-span-6 lg:col-start-7" delay={80}>
         <Form id="optin-reto" location="seccion-registro" />
-      </div>
+      </Reveal>
     </div>
   </Section>
 
@@ -175,17 +203,18 @@ const comoFunciona = [
   */
   }
   <Section id="contacto" width="narrow">
-    <SectionHeading
-      title="¿Tienes una duda antes de entrar?"
-      subtitle="Escríbenos y te respondemos en menos de 24 horas hábiles."
-    />
-    <div class="mt-10 max-w-lg">
+    <Reveal>
+      <SectionHeading
+        title="¿Tienes una duda antes de entrar?"
+        subtitle="Escríbenos y te respondemos en menos de 24 horas hábiles."
+      />
+    </Reveal>
+    <Reveal class="mt-10 max-w-lg" delay={80}>
       <Form id="contacto" location="seccion-contacto" />
-    </div>
+    </Reveal>
   </Section>
 
   <FaqSection
-    eyebrow="Preguntas"
     title="Lo que más nos preguntan"
     subtitle="Si tu duda no está aquí, escríbenos y te contestamos."
     items={faqs}

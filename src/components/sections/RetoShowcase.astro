@@ -1,0 +1,172 @@
+---
+/**
+ * ============================================================================
+ *  RetoShowcase — los retos en composición asimétrica, no en rejilla
+ * ============================================================================
+ *  Sustituye a <Features> para la sección de retos de la home. La razón no es
+ *  estética:
+ *
+ *  Tres tarjetas iguales en fila hacen que tres cosas distintas pesen lo mismo,
+ *  y cuando todo pesa igual nada pesa. Los retos NO son equivalentes: hay uno
+ *  que es la puerta de entrada (el de `order` más bajo) y dos que son caminos
+ *  alternos. La rejilla de tres columnas escondía justo ese dato, que es el
+ *  único que la persona necesita para decidir. Aquí el primero ocupa 7 de 12 y
+ *  los otros dos comparten una columna de 5, separados por un filete en vez de
+ *  metidos en cajas.
+ *
+ *  Tantas celdas como retos hay: 3 elementos → 3 celdas. Si algún día hay 4
+ *  destacados, el cuarto entra en la columna secundaria; no se abre una celda
+ *  vacía para rellenar la rejilla.
+ *
+ *  ── SOBRE LAS PORTADAS ──────────────────────────────────────────────────
+ *  `cover` ya existe en el schema de la colección (src/content.config.ts) y
+ *  hasta ahora ningún reto lo usaba, así que la sección era iconos sobre color.
+ *  Este componente sí la pinta cuando está: basta añadir `cover:` y `coverAlt:`
+ *  al frontmatter del reto y la celda destacada pasa a tener imagen real. Sin
+ *  portada cae al tratamiento de icono, así que nada se rompe mientras llegan
+ *  las fotos.
+ * ============================================================================
+ */
+import Reveal from "@components/ui/Reveal.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import { Image } from "astro:assets";
+import { Icon } from "astro-icon/components";
+
+export interface RetoCard {
+  title: string;
+  /** Frase corta de una línea. Es lo que se lee en la columna secundaria. */
+  tagline: string;
+  description: string;
+  href: string;
+  /** Icono de Lucide SIN prefijo, ej. "book-open". Respaldo si no hay portada. */
+  icon?: string;
+  duration?: string;
+  commitment?: string;
+  cover?: ImageMetadata;
+  coverAlt?: string;
+}
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  items: RetoCard[];
+  background?: "default" | "muted" | "soft";
+  id?: string;
+}
+
+const { eyebrow, title, subtitle, items, background = "muted", id } = Astro.props;
+
+const [featured, ...rest] = items;
+
+/**
+ * Duración y compromiso van juntos en una línea con UN separador. El punto
+ * medio se raciona: en cuanto una tira mete tres o cuatro, deja de leerse como
+ * dato y se lee como decoración.
+ */
+const featuredMeta = [featured?.duration, featured?.commitment].filter(Boolean).join(" · ");
+---
+
+<Section id={id} background={background}>
+  <Reveal>
+    <SectionHeading eyebrow={eyebrow} title={title} subtitle={subtitle} />
+  </Reveal>
+
+  <div class="mt-14 grid gap-x-10 gap-y-8 lg:grid-cols-12">
+    {
+      /*
+        CELDA DESTACADA. Lleva fondo tintado y no solo borde: en una rejilla
+        donde el resto es texto sobre papel, el tinte es lo que comunica "por
+        aquí se empieza" sin necesidad de una etiqueta que lo diga.
+      */
+    }
+    {
+      featured && (
+        <Reveal class="lg:col-span-7">
+          <a
+            href={featured.href}
+            class="bg-primary-soft border-primary-muted rounded-card group flex h-full flex-col gap-5 border p-6 transition-colors duration-150 ease-out-soft hover:border-primary sm:p-8"
+          >
+            {featured.cover ? (
+              <Image
+                src={featured.cover}
+                alt={featured.coverAlt ?? ""}
+                widths={[480, 800, 1200]}
+                sizes="(min-width: 1024px) 45vw, 100vw"
+                class="rounded-image aspect-[16/10] w-full object-cover"
+              />
+            ) : (
+              featured.icon && (
+                <div
+                  class="rounded-btn bg-surface text-primary grid size-12 place-items-center"
+                  aria-hidden="true"
+                >
+                  <Icon name={`lucide:${featured.icon}`} class="size-6" />
+                </div>
+              )
+            )}
+
+            <div class="flex flex-col gap-3">
+              <h3 class="font-display text-h2 text-ink font-bold">{featured.title}</h3>
+              <p class="text-lead text-ink-muted max-w-[46ch]">{featured.tagline}</p>
+              <p class="text-ink-muted max-w-[52ch]">{featured.description}</p>
+            </div>
+
+            {featuredMeta && (
+              <p class="border-primary-muted text-ink-subtle mt-auto border-t pt-4 text-sm">
+                {featuredMeta}
+              </p>
+            )}
+          </a>
+        </Reveal>
+      )
+    }
+
+    {
+      /*
+        COLUMNA SECUNDARIA. Sin cajas: filetes entre filas. Son alternativas,
+        no productos de segunda, y encerrarlas en tarjetas más pequeñas las
+        habría degradado visualmente además de repetir la forma de la celda
+        grande.
+      */
+    }
+    {
+      rest.length > 0 && (
+        <Reveal class="lg:col-span-5" delay={80}>
+          <ul class="divide-line flex h-full flex-col divide-y">
+            {rest.map((item, index) => (
+              <li>
+                {/*
+                  El padding se decide con el índice y NO con `first:pt-0`: cada
+                  <a> es el primer hijo de su propio <li>, así que la variante
+                  `first:` le habría aplicado a TODAS las filas y la segunda
+                  habría quedado pegada a su filete.
+                */}
+                <a
+                  href={item.href}
+                  class={`group flex items-start gap-4 ${index === 0 ? "pb-6" : "py-6 last:pb-0"}`}
+                >
+                  {item.icon && (
+                    <span
+                      class="rounded-btn bg-primary-soft text-primary grid size-11 shrink-0 place-items-center"
+                      aria-hidden="true"
+                    >
+                      <Icon name={`lucide:${item.icon}`} class="size-5" />
+                    </span>
+                  )}
+                  <span class="flex flex-col gap-1.5">
+                    <span class="font-display text-h3 text-ink group-hover:text-primary font-semibold transition-colors duration-150">
+                      {item.title}
+                    </span>
+                    <span class="text-ink-muted text-sm">{item.tagline}</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </Reveal>
+      )
+    }
+  </div>
+</Section>

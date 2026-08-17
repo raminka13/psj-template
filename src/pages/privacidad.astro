@@ -1,0 +1,383 @@
+---
+/**
+ * ============================================================================
+ *  AVISO DE PRIVACIDAD
+ * ============================================================================
+ *  Texto base para los mercados de PSJ: LATAM (México, Colombia, Perú, Chile,
+ *  Argentina, Ecuador, Guatemala, Venezuela), Estados Unidos y España.
+ *
+ *  ── DE DÓNDE SALE CADA AFIRMACIÓN ────────────────────────────────────────
+ *  Todo lo que este aviso dice sobre QUÉ datos se recogen y A DÓNDE van está
+ *  leído del código, no copiado de una plantilla genérica:
+ *
+ *    Campos de formulario ....... src/config/forms.ts
+ *    Claves que viajan a GHL ..... buildGhlPayload() en src/lib/forms.ts
+ *    Reenvío al CRM .............. src/pages/api/form.ts
+ *    Atribución en el navegador .. src/components/forms/UtmCapture.astro
+ *    Preferencia de tema ......... src/components/ui/ThemeToggle.astro
+ *
+ *  Por eso el aviso puede afirmar cosas concretas y comprobables ("no se
+ *  instalan cookies", "el número se guarda en formato +52…") en vez de las
+ *  generalidades que nadie puede verificar ni reclamar.
+ *
+ *  ── LO QUE ESTA PÁGINA NO INVENTA ────────────────────────────────────────
+ *  Los huecos marcados con `gap` en pantalla son datos que solo PSJ tiene:
+ *  razón social, domicilio, plazos de conservación y jurisdicción. NO se
+ *  rellenan con texto plausible. Un plazo de conservación inventado no es
+ *  relleno: es una declaración falsa sobre datos personales que el sitio ya
+ *  está recogiendo hoy.
+ *
+ *  ── NOINDEX MIENTRAS SEA BORRADOR ────────────────────────────────────────
+ *  `noindex: true` está puesto A PROPÓSITO: no se indexa una página que
+ *  muestra "PENDIENTE" en pantalla.
+ *
+ *  AL APROBAR EL TEXTO hay que tocar DOS sitios, y este es el otro:
+ *    1. Quitar `noindex: true` de aquí abajo.
+ *    2. Borrar el bloque que excluye /privacidad y /terminos del `filter` del
+ *       sitemap, en astro.config.mjs.
+ *
+ *  Van juntos porque separarlos rompe: una URL con noindex dentro del sitemap
+ *  dispara en Search Console el aviso "URL enviada marcada como noindex". La
+ *  prioridad del sitemap ya está puesta para ese momento y no hay que tocarla.
+ *
+ *  ── COMPOSICIÓN: POR QUÉ UNA SOLA FAMILIA DE LAYOUT ──────────────────────
+ *  Las reglas de CLAUDE.md piden >= 4 familias de layout por página. Aquí hay
+ *  una, a propósito. Esa regla existe para que una landing no se lea como
+ *  plantilla generada; un documento legal es lo contrario: se lee en orden, se
+ *  cita por número de apartado y se compara contra otra versión. Partirlo en
+ *  secciones alternas con fondos distintos lo haría más difícil de leer y de
+ *  citar. Eyebrows: 0.
+ * ============================================================================
+ */
+import Prose from "@components/ui/Prose.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import PageLayout from "@layouts/PageLayout.astro";
+import { site } from "@config/site";
+
+/**
+ * Marca visual de los datos que faltan. Va en amarillo de estado porque tiene
+ * que ser imposible pasarlo por alto al revisar la página: un hueco discreto
+ * en un documento legal se publica sin que nadie lo note.
+ *
+ * `--warning` está anotado en tokens.css como "solo fondo, nunca texto", así
+ * que el texto va en `text-ink` sobre `bg-warning-soft`, que sí contrasta.
+ */
+const gap = "bg-warning-soft text-ink rounded-badge px-1.5 font-semibold";
+
+/**
+ * La fecha de versión NO se genera con `new Date()`. Poner la fecha del build
+ * sobre un texto que nadie revisó hoy declara una revisión que no ocurrió, y
+ * además cambiaría sola en cada despliegue: el apartado 12 promete que la fecha
+ * se mueve cuando cambia el tratamiento de datos, no cuando se recompila.
+ */
+const version = `<span class="${gap}">[PENDIENTE: fecha de aprobación]</span>`;
+---
+
+<PageLayout
+  seo={{
+    title: "Aviso de privacidad",
+    description:
+      "Qué datos personales recoge Para Siempre Juntos, para qué los usa, con quién los comparte y cómo puedes acceder, corregir o eliminar los tuyos.",
+    // Quitar esta línea cuando el texto esté aprobado. Ver la nota de arriba.
+    noindex: true,
+    breadcrumbs: [{ name: "Aviso de privacidad", href: "/privacidad" }],
+  }}
+>
+  <Section width="narrow">
+    <SectionHeading
+      as="h1"
+      size="h1"
+      title="Aviso de privacidad"
+      subtitle={`Última actualización: ${version}<br />Aplica a ${site.url.replace("https://", "")} y a los formularios publicados en este sitio.`}
+    />
+
+    {/* Aviso de borrador. Se borra entero cuando el texto quede aprobado. */}
+    <div class="bg-warning-soft rounded-card mt-8 p-5">
+      <p class="text-ink font-semibold">Borrador — no publicar como definitivo</p>
+      <p class="text-ink-muted mt-2 text-sm">
+        Este texto describe con exactitud cómo trata los datos el sitio hoy, pero todavía tiene
+        huecos que solo PSJ puede llenar (los marcados en amarillo) y no lo ha revisado un abogado.
+        Mientras diga esto, la página está en <code>noindex</code>.
+      </p>
+    </div>
+
+    <Prose class="mt-12">
+      <h2>1. Quién responde por tus datos</h2>
+      <p>
+        El responsable del tratamiento de tus datos personales es <span class={gap}
+          >[PENDIENTE: razón social completa]</span
+        >, con domicilio en <span class={gap}>[PENDIENTE: domicilio fiscal completo]</span>, que
+        opera la marca Para Siempre Juntos (PSJ).
+      </p>
+      <p>
+        Para cualquier tema de privacidad puedes escribir a <a href={`mailto:${site.organization.email}`}
+          >{site.organization.email}</a
+        >.
+      </p>
+      <p>
+        La ley mexicana (LFPDPPP) exige que el domicilio del responsable aparezca en el aviso, y
+        varias leyes de LATAM piden lo mismo. Por eso los dos huecos de arriba son obligatorios,
+        no opcionales.
+      </p>
+
+      <h2>2. Qué datos recogemos</h2>
+
+      <h3>2.1 Los que tú nos escribes</h3>
+      <p>Solo los que tecleas en un formulario de este sitio:</p>
+      <ul>
+        <li><strong>Nombre</strong> y, en algunos formularios, apellido.</li>
+        <li><strong>Correo electrónico.</strong></li>
+        <li>
+          <strong>Teléfono</strong>, cuando el formulario lo pide. Se guarda en formato
+          internacional (por ejemplo <code>+528112345678</code>) porque es el formato que necesitan
+          WhatsApp y los envíos automatizados.
+        </li>
+        <li><strong>El mensaje</strong> que escribas, en el formulario de contacto.</li>
+        <li><strong>Tu consentimiento</strong>, y el momento exacto en que lo diste.</li>
+      </ul>
+
+      <h3>2.2 Los que se recogen solos cuando llegas</h3>
+      <p>
+        Cuando envías un formulario, viaja junto con él información sobre cómo llegaste. Sirve para
+        saber qué campaña funciona, no para identificarte:
+      </p>
+      <ul>
+        <li>
+          Los parámetros de campaña de la dirección (<code>utm_source</code>, <code>utm_medium</code
+          >, <code>utm_campaign</code>, <code>utm_term</code>, <code>utm_content</code>).
+        </li>
+        <li>
+          Los identificadores de clic de anuncios de Google (<code>gclid</code>) y de Meta (<code
+            >fbclid</code
+          >), cuando vienes de un anuncio.
+        </li>
+        <li>
+          El sitio desde el que llegaste, solo si es externo, y la primera página que abriste.
+        </li>
+        <li>La página y la sección exactas desde donde enviaste el formulario, y la fecha y hora.</li>
+      </ul>
+
+      <h3>2.3 Lo que NO recogemos</h3>
+      <ul>
+        <li>
+          <strong>Datos de pago.</strong> Este sitio no tiene pasarela de cobro: no te pedimos ni
+          guardamos números de tarjeta ni cuentas bancarias.
+        </li>
+        <li>
+          <strong>Tu ubicación exacta</strong>, tu libreta de contactos ni nada del dispositivo más
+          allá de lo descrito arriba.
+        </li>
+        <li>
+          <strong>No compramos listas</strong> ni añadimos a nadie que no se haya registrado.
+        </li>
+      </ul>
+
+      <h3>2.4 Un caso que sí hay que nombrar: tus creencias</h3>
+      <p>
+        Para Siempre Juntos es una marca de contenido cristiano. Registrarte en un reto de fe puede
+        revelar, por deducción, tu convicción religiosa — y las creencias religiosas son un
+        <strong>dato personal sensible</strong> tanto para la ley mexicana como para el reglamento
+        europeo.
+      </p>
+      <p>
+        No te pedimos que declares tu religión en ningún formulario y no guardamos ningún campo de
+        ese tipo. Aun así lo decimos abiertamente: al registrarte en un reto de fe aceptas que
+        tratemos tu inscripción sabiendo lo que implica, y ese tratamiento se limita a entregarte el
+        contenido que pediste. Puedes retirar ese consentimiento cuando quieras, con el
+        procedimiento del apartado 8.
+      </p>
+
+      <h2>3. Para qué los usamos</h2>
+      <p>
+        <strong>Finalidades necesarias</strong> — sin ellas no podemos darte lo que pediste:
+      </p>
+      <ul>
+        <li>Mandarte el acceso al reto, al recurso o al grupo en el que te registraste.</li>
+        <li>Enviarte el contenido, los recordatorios y las instrucciones de ese reto.</li>
+        <li>Responder tu mensaje si nos escribiste por el formulario de contacto.</li>
+        <li>Dejar constancia de que diste tu consentimiento y cuándo.</li>
+      </ul>
+      <p><strong>Finalidades adicionales</strong> — puedes oponerte sin perder lo anterior:</p>
+      <ul>
+        <li>Contarte de otros retos, contenidos o eventos de PSJ.</li>
+        <li>Mandarte el boletín con lo que publicamos.</li>
+        <li>
+          Medir qué campañas traen gente, en conjunto. Aquí nos interesa el total, no tu caso.
+        </li>
+      </ul>
+      <p>
+        Si no quieres las finalidades adicionales, dilo a <a href={`mailto:${site.organization.email}`}
+          >{site.organization.email}</a
+        > y seguirás recibiendo solo lo del reto que pediste.
+      </p>
+
+      <h2>4. Con quién los compartimos</h2>
+      <p>
+        <strong>No vendemos tus datos personales</strong> y no los intercambiamos con terceros para
+        su propia publicidad. Los compartimos únicamente con los proveedores que hacen funcionar el
+        servicio, y solo con lo que cada uno necesita:
+      </p>
+      <ul>
+        <li>
+          <strong>GoHighLevel</strong> (Estados Unidos) — es nuestro CRM. Recibe todo lo que
+          escribiste en el formulario más los datos de campaña del apartado 2.2, y es desde donde
+          salen los correos y los mensajes de WhatsApp.
+        </li>
+        <li>
+          <strong>Netlify</strong> (Estados Unidos) — hospeda el sitio y ejecuta el envío del
+          formulario. Si el envío al CRM falla, el contenido de ese formulario queda escrito en el
+          registro técnico de Netlify para poder recuperarlo a mano y que tu registro no se pierda.
+        </li>
+      </ul>
+      <p>
+        También podríamos entregar datos si nos lo exige una autoridad competente por una vía legal
+        válida.
+      </p>
+
+      <h3>4.1 Transferencia internacional</h3>
+      <p>
+        Los dos proveedores están en Estados Unidos. Si escribes desde México, Colombia, Perú,
+        Chile, Argentina, Ecuador, Guatemala, Venezuela o España, tus datos salen de tu país y se
+        procesan en Estados Unidos, donde la protección de datos puede ser distinta de la de tu
+        legislación local. Al enviar el formulario aceptas esa transferencia, que es imprescindible
+        para poder entregarte el contenido.
+      </p>
+
+      <h2>5. Qué se guarda en tu navegador</h2>
+      <p>
+        <strong>Este sitio no instala cookies.</strong> Guarda dos cosas en el almacenamiento local
+        de tu navegador, y ninguna de las dos te identifica:
+      </p>
+      <ul>
+        <li>
+          <code>psj_attribution</code> — los datos de campaña del apartado 2.2, para que si llegas
+          por un anuncio a un artículo y te registras tres páginas después, esa campaña reciba el
+          crédito. Vive en <code>sessionStorage</code>: se borra sola al cerrar la pestaña.
+        </li>
+        <li>
+          <code>theme</code> — si prefieres el sitio en claro u oscuro. Nada más.
+        </li>
+      </ul>
+      <p>
+        Las tipografías se sirven desde nuestro propio dominio, así que abrir una página de este
+        sitio no le avisa a Google ni a ningún otro tercero de que estuviste aquí.
+      </p>
+      <p>
+        <span class={gap}>[PENDIENTE: confirmar]</span> Si PSJ instala Google Tag Manager, Google Analytics
+        o el píxel de Meta en esta copia del sitio, este apartado deja de ser cierto y hay que reescribirlo
+        — esas herramientas sí ponen cookies y sí mandan datos a terceros.
+      </p>
+
+      <h2>6. Cuánto tiempo los conservamos</h2>
+      <p>
+        Conservamos tus datos mientras sigas suscrito y durante <span class={gap}
+          >[PENDIENTE: plazo de conservación tras la baja]</span
+        > después de que te des de baja, para poder demostrar que en su momento diste tu consentimiento.
+        Cumplido ese plazo se eliminan o se anonimizan.
+      </p>
+      <p>
+        <span class={gap}>[PENDIENTE: confirmar]</span> Si alguna obligación fiscal o contable de tu
+        país exige guardarlos más tiempo, hay que decirlo aquí con el plazo concreto.
+      </p>
+
+      <h2>7. Tus derechos</h2>
+      <p>
+        Pase lo que pase y estés donde estés, sobre tus datos puedes: <strong>saber</strong> cuáles tenemos,
+        <strong>corregirlos</strong> si están mal, <strong>eliminarlos</strong>,
+        <strong>oponerte</strong> a usos concretos, <strong>llevártelos</strong> en un archivo y
+        <strong>retirar tu consentimiento</strong> cuando quieras.
+      </p>
+
+      <h3>7.1 México</h3>
+      <p>
+        La LFPDPPP llama a estos derechos <strong>ARCO</strong>: Acceso, Rectificación, Cancelación
+        y Oposición, más la limitación del uso o divulgación de tus datos. También puedes acudir al
+        INAI si consideras que no te atendimos bien.
+      </p>
+
+      <h3>7.2 Resto de LATAM</h3>
+      <p>
+        Colombia (Ley 1581), Perú (Ley 29733), Chile (Ley 19.628), Argentina (Ley 25.326) y Ecuador
+        reconocen derechos equivalentes de acceso, actualización, rectificación, supresión y
+        revocación del consentimiento, y cada país tiene su autoridad de protección de datos ante la
+        que puedes reclamar.
+      </p>
+
+      <h3>7.3 Estados Unidos</h3>
+      <p>
+        Si resides en California, la CCPA/CPRA te da derecho a saber qué categorías de datos
+        recogimos, a pedir que los eliminemos, a corregirlos y a que no te tratemos peor por
+        ejercerlos. <strong>No vendemos ni compartimos datos personales</strong> en el sentido que la
+        CCPA da a esos términos. Los residentes de Virginia, Colorado, Connecticut, Utah y Texas
+        tienen derechos equivalentes bajo sus propias leyes estatales.
+      </p>
+
+      <h3>7.4 España y Unión Europea</h3>
+      <p>
+        Se aplica el RGPD: acceso, rectificación, supresión, limitación, portabilidad y oposición,
+        además del derecho a reclamar ante la autoridad de control de tu país (en España, la AEPD).
+        La base legal de nuestro tratamiento es tu consentimiento, que puedes retirar en cualquier
+        momento sin que eso afecte a lo hecho antes.
+      </p>
+
+      <h2>8. Cómo ejercer cualquiera de esos derechos</h2>
+      <p>
+        Escribe a <a href={`mailto:${site.organization.email}`}>{site.organization.email}</a> desde el
+        mismo correo con el que te registraste — así sabemos que eres tú sin pedirte más datos — e indica
+        qué quieres que hagamos.
+      </p>
+      <p>
+        Te responderemos en un plazo máximo de <span class={gap}
+          >[PENDIENTE: plazo de respuesta]</span
+        > días. Ejercer estos derechos es gratuito.
+      </p>
+
+      <h2>9. Cómo dejar de recibir mensajes</h2>
+      <ul>
+        <li>
+          <strong>Correo:</strong> cada correo que mandamos lleva un enlace para darte de baja al
+          final. Un solo clic y se acabó.
+        </li>
+        <li>
+          <strong>WhatsApp:</strong> respóndenos <strong>BAJA</strong> y dejamos de escribirte.
+        </li>
+      </ul>
+      <p>
+        Darte de baja de las comunicaciones no borra tus datos por sí solo. Si además quieres que
+        los eliminemos, pídelo por el apartado 8.
+      </p>
+
+      <h2>10. Menores de edad</h2>
+      <p>
+        Este sitio está dirigido a personas adultas y no pedimos datos a menores a sabiendas. Si
+        eres madre, padre o tutor y crees que un menor a tu cargo nos dejó sus datos, escríbenos a
+        <a href={`mailto:${site.organization.email}`}>{site.organization.email}</a> y los eliminamos.
+      </p>
+
+      <h2>11. Seguridad</h2>
+      <p>
+        El sitio se sirve cifrado (HTTPS) y los datos del formulario viajan a nuestro CRM desde
+        nuestro propio servidor, nunca directamente desde tu navegador, para que las credenciales de
+        acceso al CRM no queden expuestas. Aun así, ningún sistema conectado a internet es
+        infalible, y no podemos prometerte seguridad absoluta.
+      </p>
+
+      <h2>12. Cambios a este aviso</h2>
+      <p>
+        Si cambiamos cómo tratamos tus datos, actualizaremos este texto y la fecha del encabezado.
+        Si el cambio es importante, te lo diremos por correo antes de aplicarlo.
+      </p>
+
+      <h2>13. Contacto</h2>
+      <p>
+        Para cualquier duda sobre este aviso: <a href={`mailto:${site.organization.email}`}
+          >{site.organization.email}</a
+        >.
+      </p>
+      <p>
+        Puedes consultar también nuestros <a href="/terminos">términos y condiciones</a>.
+      </p>
+    </Prose>
+  </Section>
+</PageLayout>

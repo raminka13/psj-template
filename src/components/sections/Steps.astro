@@ -13,6 +13,7 @@
  *  número y una línea de conexión, y no hay caja alrededor.
  * ============================================================================
  */
+import Reveal from "@components/ui/Reveal.astro";
 import Section from "@components/ui/Section.astro";
 import SectionHeading from "@components/ui/SectionHeading.astro";
 
@@ -34,12 +35,17 @@ const { eyebrow, title, subtitle, items, background = "default", id } = Astro.pr
 ---
 
 <Section id={id} background={background}>
-  <SectionHeading eyebrow={eyebrow} title={title} subtitle={subtitle} />
+  <Reveal>
+    <SectionHeading eyebrow={eyebrow} title={title} subtitle={subtitle} />
+  </Reveal>
 
   <ol class="mt-14 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
     {
       items.map((item, index) => (
-        <li class="group relative flex flex-col gap-3">
+        // El escalonado aquí SÍ significa algo: es una secuencia, y que los
+        // pasos lleguen en orden refuerza que hay un orden. En una rejilla sin
+        // orden el mismo efecto sería solo adorno.
+        <Reveal as="li" delay={index * 70} class="group relative flex flex-col gap-3">
           {/*
             Línea de conexión hacia el siguiente paso. Solo en escritorio y
             nunca después del último: una línea que sale del último paso
@@ -61,7 +67,7 @@ const { eyebrow, title, subtitle, items, background = "default", id } = Astro.pr
 
           <h3 class="font-display text-ink text-lg font-semibold">{item.title}</h3>
           <p class="text-ink-muted text-sm">{item.description}</p>
-        </li>
+        </Reveal>
       ))
     }
   </ol>

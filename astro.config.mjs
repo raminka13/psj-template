@@ -91,6 +91,20 @@ export default defineConfig({
         // aviso "URL enviada marcada como noindex".
         if (pathname.startsWith("/blog/tag/")) return false;
 
+        // Fuera las páginas legales MIENTRAS SIGAN EN BORRADOR.
+        //
+        // privacidad.astro y terminos.astro llevan hoy `noindex: true` porque
+        // su texto todavía tiene huecos sin llenar. Es exactamente el mismo
+        // caso que los tags de aquí arriba: una URL con noindex dentro del
+        // sitemap dispara en Search Console el aviso "URL enviada marcada como
+        // noindex".
+        //
+        // AL APROBAR EL TEXTO LEGAL: se quita `noindex` de las dos páginas y
+        // se borra este bloque. Las dos páginas llevan el mismo recordatorio
+        // apuntando aquí. Al borrarlo entran solas al sitemap, ya con la
+        // prioridad que les toca (ver `serialize`).
+        if (pathname === "/privacidad" || pathname === "/terminos") return false;
+
         // Fuera el endpoint de formularios: no es una página.
         if (pathname.startsWith("/api")) return false;
 
@@ -114,6 +128,18 @@ export default defineConfig({
         } else if (pathname.startsWith("/blog/")) {
           item.priority = 0.7;
           item.changefreq = ChangeFreqEnum.MONTHLY;
+        } else if (pathname === "/privacidad" || pathname === "/terminos") {
+          // La letra chica se indexa —Google la lee como señal de confianza y
+          // las plataformas de anuncios exigen un aviso accesible— pero no
+          // compite con el contenido ni cambia cada semana. Sin esta rama
+          // caería en el `else` de abajo, pensado para landings de venta, y
+          // saldría anunciada como 0.9 / semanal.
+          //
+          // La regla vive aquí desde ya, aunque el filtro las excluya mientras
+          // son borrador: así aprobar el texto es UN solo cambio y no hay que
+          // acordarse de volver a tocar esto.
+          item.priority = 0.3;
+          item.changefreq = ChangeFreqEnum.YEARLY;
         } else {
           // Landings y páginas de venta.
           item.priority = 0.9;

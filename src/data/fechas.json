@@ -1,0 +1,52 @@
+[
+  {
+    "id": "sabiduria-2026-08-24",
+    "reto": "reto-de-sabiduria",
+    "startDate": "2026-08-24",
+    "status": "cerrado"
+  },
+  {
+    "id": "mas-sabiduria-2026-08-31",
+    "reto": "mas-sabiduria",
+    "startDate": "2026-08-31",
+    "status": "abierto"
+  },
+  {
+    "id": "sabiduria-2026-09-07",
+    "reto": "reto-de-sabiduria",
+    "startDate": "2026-09-07",
+    "status": "abierto"
+  },
+  {
+    "id": "emprende-2026-09-14",
+    "reto": "emprende-con-proposito",
+    "startDate": "2026-09-14",
+    "status": "lista-de-espera",
+    "note": "Un solo grupo por trimestre"
+  },
+  {
+    "id": "mas-sabiduria-2026-09-28",
+    "reto": "mas-sabiduria",
+    "startDate": "2026-09-28",
+    "status": "abierto"
+  },
+  {
+    "id": "sabiduria-2026-10-05",
+    "reto": "reto-de-sabiduria",
+    "startDate": "2026-10-05",
+    "status": "abierto"
+  },
+  {
+    "id": "mas-sabiduria-2026-10-26",
+    "reto": "mas-sabiduria",
+    "startDate": "2026-10-26",
+    "status": "abierto"
+  },
+  {
+    "id": "sabiduria-2026-11-09",
+    "reto": "reto-de-sabiduria",
+    "startDate": "2026-11-09",
+    "status": "abierto",
+    "note": "Último grupo del año"
+  }
+]

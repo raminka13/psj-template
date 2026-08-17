@@ -35,3 +35,17 @@ pnpm-debug.log*
 
 # Local Netlify folder
 .netlify
+
+# ── Impeccable ────────────────────────────────────────────────────────────
+# .impeccable/config.json SÍ se versiona: es la config compartida del detector
+# (hook activado, reglas ignoradas del proyecto) y debe viajar con el template.
+#
+# Estos dos NO, porque son de máquina: el manifiesto del hook con rutas locales
+# y el registro de consentimiento de cada persona.
+#
+# Se declaran aquí a propósito aunque ya estén ignorados en esta máquina: uno
+# lo cubre el gitignore global del usuario y el otro .git/info/exclude, y
+# NINGUNO de los dos viaja al clonar. Quien saque una copia del template en
+# otro equipo acabaría commiteando su config local.
+.claude/settings.local.json
+.impeccable/config.local.json

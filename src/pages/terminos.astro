@@ -1,0 +1,267 @@
+---
+/**
+ * ============================================================================
+ *  TÉRMINOS Y CONDICIONES
+ * ============================================================================
+ *  Texto base para los mercados de PSJ: LATAM, Estados Unidos y España.
+ *
+ *  ── LO QUE ESTA PÁGINA NO INVENTA ────────────────────────────────────────
+ *  Igual que el aviso de privacidad: los huecos marcados con `gap` en pantalla
+ *  son datos que solo PSJ tiene (razón social, domicilio, jurisdicción,
+ *  pasarela de cobro) y NO se rellenan con texto plausible.
+ *
+ *  El apartado 6 es el que más cuidado pide. La garantía de 14 días NO está
+ *  inventada aquí: ya está publicada como letra chica en src/config/ctas.ts
+ *  ("Si a los 14 días no era para ti, te devolvemos tu dinero"). Este documento
+ *  la recoge porque unos términos que contradigan lo que promete el botón son
+ *  peores que no tener términos. Lo que sí queda como hueco es su ALCANCE
+ *  exacto: a qué productos aplica, desde cuándo cuentan los 14 días y por qué
+ *  vía se devuelve. Esos detalles son los que se discuten en una disputa.
+ *
+ *  ── NOINDEX MIENTRAS SEA BORRADOR ────────────────────────────────────────
+ *  Al aprobar el texto hay que quitar `noindex: true` de aquí Y borrar el
+ *  bloque que excluye /privacidad y /terminos del `filter` del sitemap, en
+ *  astro.config.mjs. Si se hace solo una de las dos cosas, Search Console
+ *  marca error. La nota larga está en privacidad.astro.
+ *
+ *  ── COMPOSICIÓN ──────────────────────────────────────────────────────────
+ *  Una sola familia de layout, a propósito, por la misma razón que en
+ *  privacidad.astro: un documento legal se lee en orden y se cita por
+ *  apartado. Eyebrows: 0.
+ * ============================================================================
+ */
+import Prose from "@components/ui/Prose.astro";
+import Section from "@components/ui/Section.astro";
+import SectionHeading from "@components/ui/SectionHeading.astro";
+import PageLayout from "@layouts/PageLayout.astro";
+import { site } from "@config/site";
+
+/** Misma marca de hueco que en privacidad.astro. Ver la nota de allí. */
+const gap = "bg-warning-soft text-ink rounded-badge px-1.5 font-semibold";
+
+/** Fecha de versión. Ver en privacidad.astro por qué no se genera sola. */
+const version = `<span class="${gap}">[PENDIENTE: fecha de aprobación]</span>`;
+---
+
+<PageLayout
+  seo={{
+    title: "Términos y condiciones",
+    description:
+      "Las reglas de uso de Para Siempre Juntos: qué ofrecemos, cómo funcionan las compras y la garantía, qué esperamos de ti y cuáles son nuestros límites.",
+    // Quitar esta línea cuando el texto esté aprobado. Ver la nota de arriba.
+    noindex: true,
+    breadcrumbs: [{ name: "Términos y condiciones", href: "/terminos" }],
+  }}
+>
+  <Section width="narrow">
+    <SectionHeading
+      as="h1"
+      size="h1"
+      title="Términos y condiciones"
+      subtitle={`Última actualización: ${version}<br />Aplica a ${site.url.replace("https://", "")}, a sus contenidos y a los programas que se contratan desde aquí.`}
+    />
+
+    {/* Aviso de borrador. Se borra entero cuando el texto quede aprobado. */}
+    <div class="bg-warning-soft rounded-card mt-8 p-5">
+      <p class="text-ink font-semibold">Borrador — no publicar como definitivo</p>
+      <p class="text-ink-muted mt-2 text-sm">
+        Los huecos en amarillo solo puede llenarlos PSJ, y este texto no lo ha revisado un abogado.
+        Mientras diga esto, la página está en <code>noindex</code>.
+      </p>
+    </div>
+
+    <Prose class="mt-12">
+      <h2>1. Quiénes somos y qué aceptas</h2>
+      <p>
+        Este sitio lo opera <span class={gap}>[PENDIENTE: razón social completa]</span>, con
+        domicilio en <span class={gap}>[PENDIENTE: domicilio fiscal completo]</span>, bajo la marca
+        Para Siempre Juntos (PSJ).
+      </p>
+      <p>
+        Al usar el sitio, registrarte en un reto o comprar cualquier programa, aceptas estos
+        términos. Si no estás de acuerdo con ellos, no uses el sitio.
+      </p>
+      <p>
+        El tratamiento de tus datos personales se explica aparte, en el <a href="/privacidad"
+          >aviso de privacidad</a
+        >, que forma parte de estos términos.
+      </p>
+
+      <h2>2. Qué ofrecemos</h2>
+      <p>PSJ publica contenido de fe en español. En concreto:</p>
+      <ul>
+        <li><strong>Retos</strong>: programas cortos con fecha de inicio y grupo de acompañamiento.</li>
+        <li><strong>Blog y recursos gratuitos</strong>, que se leen sin registrarse.</li>
+        <li><strong>Boletines por correo</strong> y, si te registras para ello, mensajes por WhatsApp.</li>
+      </ul>
+      <p>
+        Podemos cambiar, pausar o retirar cualquier contenido o programa. Si retiramos algo que ya
+        compraste, se aplica el apartado 6.
+      </p>
+
+      <h2>3. Qué es y qué no es este contenido</h2>
+      <p>
+        Este es el apartado más importante del documento, así que va sin rodeos.
+      </p>
+      <p>
+        El contenido de PSJ es <strong>formativo y devocional</strong>. No es —ni sustituye—
+        atención médica, psicológica o psiquiátrica, terapia, consejería profesional, asesoría legal
+        ni asesoría financiera. Nada de lo que publicamos es un diagnóstico ni un tratamiento.
+      </p>
+      <p>
+        Si atraviesas una crisis de salud mental, una emergencia médica o una situación de
+        violencia, <strong>busca ayuda profesional o los servicios de emergencia de tu país</strong>.
+        Un reto de quince minutos no es el lugar para eso, y decírtelo claramente nos parece más
+        honesto que una cláusula escondida.
+      </p>
+      <p>
+        Tampoco prometemos resultados concretos. Lo que obtengas depende de tu propia participación
+        y de circunstancias que no controlamos. Los testimonios que publicamos son experiencias
+        reales de personas concretas, no un resultado típico ni garantizado.
+      </p>
+
+      <h2>4. Tu registro</h2>
+      <ul>
+        <li>Los datos que nos das tienen que ser verdaderos y estar al día.</li>
+        <li>
+          Tu acceso es <strong>personal</strong>. No lo compartas, no lo revendas ni lo uses en
+          nombre de otra persona.
+        </li>
+        <li>Debes ser mayor de edad en tu país para registrarte o comprar.</li>
+      </ul>
+      <p>
+        Podemos suspender o cancelar un acceso que se use en contra de estos términos, en particular
+        en los casos del apartado 8.
+      </p>
+
+      <h2>5. Compras, precios y pagos</h2>
+      <p>
+        Los precios se muestran en <span class={gap}>[PENDIENTE: moneda o monedas]</span> e incluyen
+        los impuestos aplicables salvo que se indique lo contrario junto al precio.
+      </p>
+      <p>
+        <span class={gap}>[PENDIENTE: pasarela de pago]</span> Los cobros se procesan a través de esa
+        plataforma. Este sitio no recibe ni almacena los datos de tu tarjeta en ningún momento.
+      </p>
+      <p>
+        Si un programa es de suscripción o de pago en varias partes, sus condiciones concretas
+        —importe, periodicidad y cómo se cancela— se muestran antes de que confirmes la compra y
+        prevalecen sobre lo general de este apartado.
+      </p>
+      <p>
+        Podemos cambiar los precios cuando queramos, pero nunca sobre una compra ya hecha.
+      </p>
+
+      <h2>6. Garantía y devoluciones</h2>
+      <p>
+        <strong>Tienes 14 días para pedir la devolución de tu dinero.</strong> Si dentro de ese plazo
+        decides que el programa no era para ti, escribe a <a
+          href={`mailto:${site.organization.email}`}>{site.organization.email}</a
+        > y te lo devolvemos. No hay que rellenar formularios ni justificar la decisión.
+      </p>
+      <p>
+        <span class={gap}>[PENDIENTE: precisar alcance]</span> Falta cerrar tres detalles: a qué productos
+        aplica exactamente esta garantía, si los 14 días cuentan desde la compra o desde el arranque
+        del grupo, y por qué vía y en cuánto tiempo se hace la devolución. Son justo los puntos que se
+        discuten cuando alguien reclama.
+      </p>
+      <p>
+        Si resides en la Unión Europea, tu derecho legal de desistimiento se suma a esta garantía y
+        no la sustituye.
+      </p>
+
+      <h2>7. Propiedad intelectual</h2>
+      <p>
+        Todo el contenido del sitio y de los programas —textos, vídeos, audios, imágenes, materiales
+        descargables, la marca y el logotipo— pertenece a PSJ o lo usamos con permiso.
+      </p>
+      <p>
+        <strong>Puedes</strong> usar el material que compres para tu vida personal, citarlo dándonos
+        crédito y compartir enlaces al sitio.
+      </p>
+      <p>
+        <strong>No puedes</strong> copiarlo, revenderlo, subirlo a otras plataformas, usarlo para
+        entrenar modelos de inteligencia artificial ni impartirlo como propio, sin nuestro permiso
+        por escrito.
+      </p>
+
+      <h2>8. Uso aceptable</h2>
+      <p>En los grupos, los comentarios y cualquier espacio compartido, no se permite:</p>
+      <ul>
+        <li>Acosar, insultar, amenazar o discriminar a otra persona.</li>
+        <li>Publicar spam, promocionar negocios propios o captar miembros para otra cosa.</li>
+        <li>Compartir el material del programa fuera del grupo.</li>
+        <li>Suplantar a otra persona o a PSJ.</li>
+        <li>Intentar vulnerar la seguridad del sitio o acceder a lo que no te corresponde.</li>
+      </ul>
+      <p>
+        Estos son espacios de fe y de confianza, muchas veces con gente contando cosas difíciles.
+        Quien rompa esas reglas puede quedar fuera sin devolución.
+      </p>
+
+      <h2>9. Lo que compartes tú</h2>
+      <p>
+        Si nos mandas un testimonio, un comentario o una respuesta, sigue siendo tuyo. Al mandárnoslo
+        nos das permiso para publicarlo y usarlo en materiales de PSJ, con tu nombre de pila o de
+        forma anónima. Si después prefieres que lo retiremos, escríbenos y lo hacemos.
+      </p>
+
+      <h2>10. Enlaces y servicios de terceros</h2>
+      <p>
+        El sitio puede enlazar a plataformas que no controlamos. No respondemos por sus contenidos ni
+        por sus prácticas: cuando salgas de aquí, se aplican sus propios términos.
+      </p>
+
+      <h2>11. Disponibilidad</h2>
+      <p>
+        Hacemos lo razonable por mantener el sitio en pie, pero no prometemos que esté disponible sin
+        interrupciones. Puede haber cortes por mantenimiento, por fallos técnicos o por causas fuera
+        de nuestro control.
+      </p>
+
+      <h2>12. Límite de nuestra responsabilidad</h2>
+      <p>
+        Hasta donde la ley de tu país lo permita, la responsabilidad de PSJ frente a ti se limita al
+        importe que hayas pagado por el programa en cuestión durante los doce meses anteriores.
+      </p>
+      <p>
+        No respondemos por daños indirectos, pérdida de ingresos ni pérdida de datos. Nada de este
+        apartado limita responsabilidades que la ley no permita limitar, como el dolo o la
+        negligencia grave.
+      </p>
+
+      <h2>13. Cambios en estos términos</h2>
+      <p>
+        Podemos actualizar estos términos. La versión vigente es siempre la publicada en esta página,
+        con su fecha. Si el cambio es importante y afecta a algo que ya compraste, te avisaremos por
+        correo.
+      </p>
+
+      <h2>14. Ley aplicable y disputas</h2>
+      <p>
+        Estos términos se rigen por las leyes de <span class={gap}
+          >[PENDIENTE: país o estado]</span
+        >, y cualquier disputa se resolverá ante los tribunales de <span class={gap}
+          >[PENDIENTE: ciudad y jurisdicción]</span
+        >.
+      </p>
+      <p>
+        Si eres consumidor, esto no te quita el derecho a reclamar ante los tribunales o la
+        autoridad de consumo de tu propio país cuando la ley te lo reconozca.
+      </p>
+      <p>
+        Antes de llegar a eso, escríbenos: casi todo se resuelve con un correo.
+      </p>
+
+      <h2>15. Contacto</h2>
+      <p>
+        Para cualquier duda sobre estos términos: <a href={`mailto:${site.organization.email}`}
+          >{site.organization.email}</a
+        >.
+      </p>
+      <p>
+        Consulta también nuestro <a href="/privacidad">aviso de privacidad</a>.
+      </p>
+    </Prose>
+  </Section>
+</PageLayout>

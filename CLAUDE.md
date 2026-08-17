@@ -174,9 +174,9 @@ src/
 │  ├─ seo/      Seo.astro · Faq.astro
 │  ├─ ui/       Button Card Badge Container Section SectionHeading Prose ThemeToggle
 │  └─ sections/ Hero Features Testimonials FaqSection Cta Header Footer BlogList PostCard
-├─ content/     blog/*.md
-├─ data/        faqs.json · testimonios.json
-└─ pages/       index · 404 · blog/ · robots.txt.ts · rss.xml.ts
+├─ content/     blog/*.md · retos/*.md
+├─ data/        faqs.json · testimonios.json · fechas.json
+└─ pages/       index · 404 · acerca · proximos-retos · blog/ · retos/ · robots.txt.ts · rss.xml.ts
 ```
 
 `BaseLayout` para páginas sin distracciones (venta larga, checkout, replay).
@@ -200,6 +200,38 @@ visible en `astro dev` para poder revisarlo.
 decorativo: `getCollection()` no respeta el orden del array del JSON, así que
 sin él salen barajados. Usa siempre los helpers de `@lib/content`
 (`getFaqs()`, `getTestimonios()`), que ya ordenan.
+
+### Fechas de arranque
+
+`src/data/fechas.json` dice cuándo empieza cada grupo, y de ahí sale
+`/proximos-retos`. Una entrada son cuatro campos: `reto` (el nombre del archivo
+en `src/content/retos/`), `startDate` en `YYYY-MM-DD`, `status` y una `note`
+opcional.
+
+Es una colección aparte y no un campo del reto porque la relación es
+uno-a-muchos: el mismo reto abre grupo cada pocas semanas. Metido en el
+frontmatter habría que reescribir el archivo del programa cada vez que se abre
+una fecha.
+
+`getProximasFechas()` es el único acceso, y hace tres cosas que no conviene
+saltarse:
+
+- **Filtra las fechas pasadas** en cada build. Un calendario es el único
+  contenido que se rompe solo: sin el filtro, la página seguiría anunciando un
+  grupo que arrancó en marzo.
+- **Rompe el build** si una fecha apunta a un reto que no existe, en vez de
+  publicar una fila que enlaza a un 404.
+- **Avisa en consola** cuando no queda ninguna fecha futura. La página tiene
+  estado vacío, pero el aviso es lo que hace que alguien lo note.
+
+Esta colección **no lleva `order`** a propósito: el orden lo fija `startDate`,
+que ya es un dato de la fecha. Un `order` paralelo se desincronizaría del
+calendario a la primera edición.
+
+Las fechas se muestran con `Intl` y **`timeZone: "UTC"` es obligatorio** en los
+formateadores: `"2026-09-07"` se interpreta como medianoche UTC, y formatearla en
+la zona del servidor de build la correría un día atrás en cualquier huso
+negativo. El lunes 7 se publicaría como "domingo 6".
 
 ---
 
@@ -459,6 +491,19 @@ Se abre con hover, pero eso es solo una de las tres formas de llegar:
   página real. Un padre que solo abre el menú deja a esas personas sin salida.
 - **Escape** → cierra y devuelve el foco al padre. Necesita un `data-nav-closed`
   propio porque `:focus-within` mantendría el panel abierto.
+
+Debajo de la lista de retos van los enlaces fijos del panel ("Próximos retos",
+"Ver todos los retos"). Salen de `retosSubnav` en `navigation.ts`, no del markup
+del Header: una entrada de menú escondida en un componente es una entrada que
+nadie encuentra cuando hay que cambiarla. En móvil se filtra la que apunta al
+mismo destino que el enlace padre.
+
+**El header está topado en 5 entradas y las cinco están ocupadas** (Inicio,
+Retos, Acerca, Blog, Preguntas). Para meter una sexta hay que sacar otra, no
+estirar el menú: por eso "Próximos retos" vive en el submenú y "Testimonios"
+quedó solo en el footer. Y el footer aguanta exactamente **3 columnas** — su
+rejilla es `[1.5fr_repeat(3,1fr)]`, así que una cuarta se cae a otra fila en
+tablet.
 
 El panel se separa del disparador con `padding`, no con `margin`: con margen queda
 una zona muerta y el menú se cierra al bajar el ratón. El cierre lleva 200ms de
